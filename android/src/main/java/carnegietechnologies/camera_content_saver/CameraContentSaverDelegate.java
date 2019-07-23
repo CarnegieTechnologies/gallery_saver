@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 
 import androidx.core.app.ActivityCompat;
 
-
 import java.io.IOException;
 
 import io.flutter.plugin.common.MethodCall;
@@ -21,6 +20,7 @@ public class CameraContentSaverDelegate implements
     static final String KEY_DATA = "fileData";
     static final String KEY_NAME = "title";
     static final String KEY_DESCRIPTION = "description";
+    static final String KEY_PATH = "path";
 
     static final String DEFAULT_NAME = "cameraImage";
     static final String DEFAULT_DESCRIPTION = "cameraDescription";
@@ -56,16 +56,19 @@ public class CameraContentSaverDelegate implements
     private void saveToGallery(MethodCall methodCall) {
         byte[] fileData = methodCall.argument(KEY_DATA);
         String title = methodCall.argument(KEY_NAME) == null ? DEFAULT_NAME
-                : methodCall.argument("title").toString();
+                : methodCall.argument(KEY_NAME).toString();
 
         String description = methodCall.argument(KEY_DESCRIPTION) == null ? DEFAULT_DESCRIPTION
-                : methodCall.argument("description").toString();
+                : methodCall.argument(KEY_DESCRIPTION).toString();
+
+        String tempPath = methodCall.argument(KEY_PATH) == null ? ""
+                : methodCall.argument(KEY_PATH).toString();
 
         String filePath = null;
 
         try {
             filePath = FileUtils.insertImage(activity.getContentResolver(),
-                    fileData, title, description);
+                    fileData, title, description, tempPath);
         } catch (IOException e) {
             e.printStackTrace();
         }

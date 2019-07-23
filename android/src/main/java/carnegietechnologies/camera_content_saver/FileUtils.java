@@ -5,12 +5,16 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,13 +22,20 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 
 public class FileUtils {
+
     public static final String insertImage(ContentResolver cr,
                                            byte[] source,
                                            String title,
-                                           String description) throws IOException {
+                                           String description, String path) throws IOException {
+
 
         InputStream is = new BufferedInputStream(new ByteArrayInputStream(source));
         String mimeType = URLConnection.guessContentTypeFromStream(is);
+
+        byte[] rotatedBytes = getRotatedBytes(source, path);
+        if (rotatedBytes != null) {
+            source = rotatedBytes;
+        }
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, title);
@@ -74,6 +85,33 @@ public class FileUtils {
 
 
         return stringUrl;
+    }
+
+    private static byte[] getRotatedBytes(byte[] source, String path)
+            throws IOException {
+        int rotationInDegrees = exifToDegrees(getRotation(path));
+
+        if (rotationInDegrees == 0) {
+            return null;
+        }
+
+        Log.d("orientation", Integer.toString(rotationInDegrees));
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(source, 0, source.length);
+        Matrix matrix = new Matrix();
+        if (rotationInDegrees != 0) {
+            matrix.preRotate(rotationInDegrees);
+        }
+        Bitmap adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        bitmap.recycle();
+        bitmap = null;
+
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        adjustedBitmap.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
+        return bitmapdata;
     }
 
     private static final Bitmap storeThumbnail(
@@ -133,4 +171,30 @@ public class FileUtils {
         cursor.close();
         return filePath;
     }
+
+    private static int exifToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+            return 90;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+            return 180;
+        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+            return 270;
+        }
+        return 0;
+    }
+
+    private static int getRotation(String path) throws IOException {
+        ExifInterface exif = new ExifInterface(path);
+        return exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL);
+    }
+
+    byte[] bitmapToArray(Bitmap bmp) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        bmp.recycle();
+        return byteArray;
+    }
 }
+

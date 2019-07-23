@@ -21,7 +21,10 @@ class CameraContentSaver {
 
 //save image
   static Future<String> saveImage(
-      {@required Uint8List fileData, String title, String description}) async {
+      {@required Uint8List fileData,
+      @required String path,
+      String title,
+      String description}) async {
     assert(fileData != null);
 
     //save image and return its path as string
@@ -29,6 +32,7 @@ class CameraContentSaver {
       methodSaveImage,
       <String, dynamic>{
         'fileData': fileData,
+        'path': path,
         'title': title,
         'description': description
       },
