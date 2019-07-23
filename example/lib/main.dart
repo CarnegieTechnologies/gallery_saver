@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:camera_content_saver/camera_content_saver.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(MyApp());
 
@@ -38,6 +40,9 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _platformVersion = platformVersion;
     });
+
+    File recodedImage = await ImagePicker.pickImage(source: ImageSource.camera);
+    CameraContentSaver.saveImage(fileData: recodedImage.readAsBytesSync());
   }
 
   @override
