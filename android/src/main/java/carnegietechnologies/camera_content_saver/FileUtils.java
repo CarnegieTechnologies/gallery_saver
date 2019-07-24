@@ -29,8 +29,9 @@ public class FileUtils {
                                            String description, String path) throws IOException {
 
 
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(source));
-        String mimeType = URLConnection.guessContentTypeFromStream(is);
+        InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(source));
+        String mimeType = URLConnection.guessContentTypeFromStream(inputStream);
+        inputStream.close();
 
         byte[] rotatedBytes = getRotatedBytes(source, path);
         if (rotatedBytes != null) {
@@ -47,7 +48,7 @@ public class FileUtils {
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
 
         Uri url = null;
-        String stringUrl = "";    /* value to be returned */
+        String stringUrl = "";
 
         try {
             url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -55,19 +56,14 @@ public class FileUtils {
             if (source != null) {
                 OutputStream imageOut = cr.openOutputStream(url);
                 try {
-                    //source.compress(Bitmap.CompressFormat.JPEG, 100, imageOut);
                     imageOut.write(source);
                 } finally {
                     imageOut.close();
                 }
 
                 long id = ContentUris.parseId(url);
-                // Wait until MINI_KIND thumbnail is generated.
                 Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-                // This is for backward compatibility.
                 storeThumbnail(cr, miniThumb, id, 50F, 50F, MediaStore.Images.Thumbnails.MICRO_KIND);
-
-
             } else {
                 cr.delete(url, null, null);
                 url = null;
@@ -108,10 +104,10 @@ public class FileUtils {
         bitmap = null;
 
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        adjustedBitmap.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
-        byte[] bitmapdata = bos.toByteArray();
-        return bitmapdata;
+        byte[] rotatedBytes = bitmapToArray(adjustedBitmap);
+        adjustedBitmap.recycle();
+
+        return rotatedBytes;
     }
 
     private static final Bitmap storeThumbnail(
@@ -189,7 +185,7 @@ public class FileUtils {
                 ExifInterface.ORIENTATION_NORMAL);
     }
 
-    byte[] bitmapToArray(Bitmap bmp) {
+    private static byte[] bitmapToArray(Bitmap bmp) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
