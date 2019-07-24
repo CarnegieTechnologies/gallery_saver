@@ -1,5 +1,7 @@
 package carnegietechnologies.camera_content_saver;
 
+import androidx.annotation.NonNull;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -7,7 +9,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
- * CameraContentSaverPlugin
+ * CameraContentSaverPlugin - entry point for android part of plugin
  */
 public class CameraContentSaverPlugin implements MethodCallHandler {
 
@@ -34,13 +36,20 @@ public class CameraContentSaverPlugin implements MethodCallHandler {
     }
 
     @Override
-    public void onMethodCall(MethodCall methodCall, Result result) {
-        if (methodCall.method.equals("getPlatformVersion")) {
-            result.success("Android " + android.os.Build.VERSION.RELEASE);
-        } else if (methodCall.method.equals("saveImage")) {
-            cameraContentSaverDelegate.saveImage(methodCall, result);
-        } else {
-            result.notImplemented();
+    public void onMethodCall(@NonNull MethodCall methodCall, @NonNull Result result) {
+        switch (methodCall.method) {
+            case "getPlatformVersion":
+                result.success("Android " + android.os.Build.VERSION.RELEASE);
+                break;
+            case "saveImage":
+                cameraContentSaverDelegate.saveFile(methodCall, result, true);
+                break;
+            case "saveVideo":
+                cameraContentSaverDelegate.saveFile(methodCall, result, false);
+                break;
+            default:
+                result.notImplemented();
+                break;
         }
     }
 }

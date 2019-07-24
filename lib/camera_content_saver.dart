@@ -18,13 +18,30 @@ class CameraContentSaver {
   }
 
 //save video
+  static Future<String> saveVideo(Uint8List fileData,
+      {String title, String description}) async {
+    assert(fileData != null);
+
+    //save image and return its path as string
+    String filePath = await _channel.invokeMethod(
+      methodSaveVideo,
+      <String, dynamic>{
+        'fileData': fileData,
+        'title': title,
+        'description': description
+      },
+    );
+    debugPrint("saved filePath:" + filePath);
+    //process ios return filePath
+    if (filePath.startsWith("file://")) {
+      filePath = filePath.replaceAll("file://", "");
+    }
+    return filePath;
+  }
 
 //save image
-  static Future<String> saveImage(
-      {@required Uint8List fileData,
-      @required String path,
-      String title,
-      String description}) async {
+  static Future<String> saveImage(Uint8List fileData, String path,
+      {String title, String description}) async {
     assert(fileData != null);
 
     //save image and return its path as string

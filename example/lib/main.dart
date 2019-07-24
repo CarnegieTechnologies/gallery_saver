@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
 
     File recodedImage = await ImagePicker.pickImage(source: ImageSource.camera);
     CameraContentSaver.saveImage(
-        fileData: recodedImage.readAsBytesSync(), path: recodedImage.path);
+        recodedImage.readAsBytesSync(), recodedImage.path);
   }
 
   @override

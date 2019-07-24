@@ -12,30 +12,44 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
+/**
+ * Class holding implementation of saving images and videos
+ */
 public class CameraContentSaverDelegate implements
         PluginRegistry.RequestPermissionsResultListener {
 
-    static final int REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2345;
+    private static final int REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2345;
 
-    static final String KEY_DATA = "fileData";
-    static final String KEY_NAME = "title";
-    static final String KEY_DESCRIPTION = "description";
-    static final String KEY_PATH = "path";
+    private static final String ALREADY_ACTIVE = "already_active";
+    private static final String PLUGIN_ALREADY_ACTIVE = "camera content saver is already active";
 
-    static final String DEFAULT_NAME = "cameraImage";
-    static final String DEFAULT_DESCRIPTION = "cameraDescription";
+    private static final String KEY_DATA = "fileData";
+    private static final String KEY_NAME = "title";
+    private static final String KEY_DESCRIPTION = "description";
+    private static final String KEY_PATH = "path";
+
+    private static final String DEFAULT_NAME = "cameraImage";
+    private static final String DEFAULT_DESCRIPTION = "cameraDescription";
 
     private final Activity activity;
 
     private MethodChannel.Result pendingResult;
     private MethodCall methodCall;
+    private boolean isImage;
 
-    public CameraContentSaverDelegate(Activity activity) {
+    CameraContentSaverDelegate(Activity activity) {
         this.activity = activity;
     }
 
 
-    public void saveImage(MethodCall methodCall, MethodChannel.Result result) {
+    /**
+     * Saves image or video to device
+     *
+     * @param methodCall - method call
+     * @param result     - result to be set when saving operation finishes
+     * @param isImage    - tells if image or video should be saved
+     */
+    void saveFile(MethodCall methodCall, MethodChannel.Result result, boolean isImage) {
         if (!setPendingMethodCallAndResult(methodCall, result)) {
             finishWithAlreadyActiveError();
             return;
@@ -48,12 +62,47 @@ public class CameraContentSaverDelegate implements
                     REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION);
             this.methodCall = methodCall;
             this.pendingResult = result;
+            this.isImage = isImage;
             return;
         }
-        saveToGallery(methodCall);
+        if (isImage) {
+            saveImage(methodCall);
+        } else {
+            saveVideo(methodCall);
+        }
     }
 
-    private void saveToGallery(MethodCall methodCall) {
+    /**
+     * Saves video with provided name and description to device
+     *
+     * @param methodCall - method call
+     */
+    private void saveVideo(MethodCall methodCall) {
+        byte[] fileData = methodCall.argument(KEY_DATA);
+        String title = methodCall.argument(KEY_NAME) == null ? DEFAULT_NAME
+                : methodCall.argument(KEY_NAME).toString();
+
+        String description = methodCall.argument(KEY_DESCRIPTION) == null ? DEFAULT_DESCRIPTION
+                : methodCall.argument(KEY_DESCRIPTION).toString();
+
+        String filePath = null;
+
+        try {
+            filePath = FileUtils.insertVideo(activity.getContentResolver(),
+                    fileData, title, description);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        finishWithSuccess(filePath);
+    }
+
+    /**
+     * Saves image with provided image and description to device
+     *
+     * @param methodCall - method call
+     */
+    private void saveImage(MethodCall methodCall) {
         byte[] fileData = methodCall.argument(KEY_DATA);
         String title = methodCall.argument(KEY_NAME) == null ? DEFAULT_NAME
                 : methodCall.argument(KEY_NAME).toString();
@@ -88,11 +137,12 @@ public class CameraContentSaverDelegate implements
     }
 
     private void finishWithAlreadyActiveError() {
-        finishWithError("already_active", "Image picker is already active");
+        finishWithError();
     }
 
-    private void finishWithError(String errorCode, String errorMessage) {
-        pendingResult.error(errorCode, errorMessage, null);
+    private void finishWithError() {
+        pendingResult.error(CameraContentSaverDelegate.ALREADY_ACTIVE,
+                CameraContentSaverDelegate.PLUGIN_ALREADY_ACTIVE, null);
         clearMethodCallAndResult();
     }
 
@@ -112,16 +162,17 @@ public class CameraContentSaverDelegate implements
         boolean permissionGranted =
                 grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-        switch (requestCode) {
-            case REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION:
-                if (permissionGranted) {
-                    saveToGallery(methodCall);
+        if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
+            if (permissionGranted) {
+                if (isImage) {
+                    saveImage(methodCall);
+                } else {
+                    saveVideo(methodCall);
                 }
-                break;
-            default:
-                return false;
+            }
+        } else {
+            return false;
         }
         return true;
     }
-
 }
