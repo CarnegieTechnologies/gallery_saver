@@ -38,9 +38,6 @@ public class CameraContentSaverPlugin implements MethodCallHandler {
     @Override
     public void onMethodCall(@NonNull MethodCall methodCall, @NonNull Result result) {
         switch (methodCall.method) {
-            case "getPlatformVersion":
-                result.success("Android " + android.os.Build.VERSION.RELEASE);
-                break;
             case "saveImage":
                 cameraContentSaverDelegate.saveFile(methodCall, result, true);
                 break;

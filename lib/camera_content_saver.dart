@@ -6,16 +6,10 @@ import 'package:flutter/services.dart';
 
 class CameraContentSaver {
   static const String channelName = 'camera_content_saver';
-  static const String methodPlatformVersion = 'getPlatformVersion';
   static const String methodSaveImage = 'saveImage';
   static const String methodSaveVideo = 'saveVideo';
 
   static const MethodChannel _channel = const MethodChannel(channelName);
-
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod(methodPlatformVersion);
-    return version;
-  }
 
 //save video
   static Future<String> saveVideo(Uint8List fileData,
