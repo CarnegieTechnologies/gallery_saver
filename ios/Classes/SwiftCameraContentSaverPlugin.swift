@@ -48,7 +48,7 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
             PHAssetChangeRequest.creationRequestForAsset(from: image)
         }) { (success, error) in
             if success {
-              flutterResult("success yeah")
+                flutterResult("smor")
             } else {
                 flutterResult("failed to save image")
             }
@@ -56,6 +56,9 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
     }
     
     func saveVideo(result: FlutterResult, call: FlutterMethodCall) {
+        let args = call.arguments as? Dictionary<String, Any>
+        let typedData = args!["fileData"] as! FlutterStandardTypedData
+        
         result("save video")
     }
     
