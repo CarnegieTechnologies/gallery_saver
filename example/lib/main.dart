@@ -24,9 +24,11 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     print("flutter start");
-    File recodedImage = await ImagePicker.pickVideo(source: ImageSource.camera);
-    String platformVersion =
-        await CameraContentSaver.saveVideo(recodedImage.readAsBytesSync());
+
+
+    File recodedVideo = await ImagePicker.pickVideo(source: ImageSource.camera);
+    String platformVersion = await CameraContentSaver.saveVideo(
+        recodedVideo.readAsBytesSync(), recodedVideo.path);
 
     setState(() {
       _platformVersion = platformVersion;

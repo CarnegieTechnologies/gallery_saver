@@ -12,7 +12,7 @@ class CameraContentSaver {
   static const MethodChannel _channel = const MethodChannel(channelName);
 
 //save video
-  static Future<String> saveVideo(Uint8List fileData,
+  static Future<String> saveVideo(Uint8List fileData, String path,
       {String title, String description}) async {
     assert(fileData != null);
 
@@ -22,6 +22,7 @@ class CameraContentSaver {
       <String, dynamic>{
         'fileData': fileData,
         'title': title,
+        'path': path,
         'description': description
       },
     );

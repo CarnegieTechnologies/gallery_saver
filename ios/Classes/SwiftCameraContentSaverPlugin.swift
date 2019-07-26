@@ -30,42 +30,68 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
         if status == .notDetermined {
             PHPhotoLibrary.requestAuthorization({status in
                 if status == .authorized{
-                    self.performSaving(image: image, flutterResult: result)
+                    self.performSavingImage(image: image, flutterResult: result)
                 } else {
                     result("permission denied");
                 }
             })
             
         } else if status == .authorized {
-            self.performSaving(image: image, flutterResult: result)
+            self.performSavingImage(image: image, flutterResult: result)
         } else {
             result("please grant photos access");
         }
     }
     
-    func performSaving(image: UIImage, flutterResult: @escaping FlutterResult){
+    func performSavingImage(image: UIImage, flutterResult: @escaping FlutterResult){
         PHPhotoLibrary.shared().performChanges({
             PHAssetChangeRequest.creationRequestForAsset(from: image)
         }) { (success, error) in
             if success {
-                flutterResult("smor")
+                flutterResult("image saved")
             } else {
                 flutterResult("failed to save image")
             }
         }
     }
     
-    func saveVideo(result: FlutterResult, call: FlutterMethodCall) {
+    func performSavingVideo(video: Data, flutterResult: @escaping FlutterResult, path: String){
+        
+        let url = URL(fileURLWithPath: path)
+        
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
+        }) { (success, error) in
+            if success {
+                flutterResult("video saved")
+            } else {
+                flutterResult("failed to save video")
+            }
+        }
+    }
+    
+    func saveVideo(result: @escaping FlutterResult, call: FlutterMethodCall) {
         let args = call.arguments as? Dictionary<String, Any>
         let typedData = args!["fileData"] as! FlutterStandardTypedData
+        let path = args!["path"] as! String
         
-        result("save video")
+        let status = PHPhotoLibrary.authorizationStatus()
+        if status == .notDetermined {
+            PHPhotoLibrary.requestAuthorization({status in
+                if status == .authorized{
+                    self.performSavingVideo(video: typedData.data, flutterResult: result, path: path)
+                } else {
+                    result("permission denied");
+                }
+            })
+        } else if status == .authorized {
+            self.performSavingVideo(video: typedData.data, flutterResult: result, path: path)
+        } else {
+            result("please grant photos access");
+        }
     }
     
     func  convertBytesToImage(bytes: Data)  -> UIImage {
         return UIImage(data: bytes)!
     }
-    
 }
-
-
