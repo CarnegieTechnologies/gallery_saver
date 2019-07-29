@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class CameraContentSaver {
@@ -11,22 +9,12 @@ class CameraContentSaver {
 
   static const MethodChannel _channel = const MethodChannel(channelName);
 
-//save video
-  static Future<String> saveVideo(Uint8List fileData, String path,
-      {String title, String description}) async {
-    assert(fileData != null);
-
-    //save image and return its path as string
+  static Future<String> saveVideo(String path) async {
     String filePath = await _channel.invokeMethod(
       methodSaveVideo,
-      <String, dynamic>{
-        'fileData': fileData,
-        'title': title,
-        'path': path,
-        'description': description
-      },
+      <String, dynamic>{'path': path},
     );
-    debugPrint("saved filePath:" + filePath);
+
     //process ios return filePath
     if (filePath.startsWith("file://")) {
       filePath = filePath.replaceAll("file://", "");
@@ -34,22 +22,12 @@ class CameraContentSaver {
     return filePath;
   }
 
-//save image
-  static Future<String> saveImage(Uint8List fileData, String path,
-      {String title, String description}) async {
-    assert(fileData != null);
-
-    //save image and return its path as string
+  static Future<String> saveImage(String path) async {
     String filePath = await _channel.invokeMethod(
       methodSaveImage,
-      <String, dynamic>{
-        'fileData': fileData,
-        'path': path,
-        'title': title,
-        'description': description
-      },
+      <String, dynamic>{'path': path},
     );
-    debugPrint("saved filePath:" + filePath);
+
     //process ios return filePath
     if (filePath.startsWith("file://")) {
       filePath = filePath.replaceAll("file://", "");

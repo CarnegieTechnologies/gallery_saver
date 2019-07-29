@@ -10,17 +10,19 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import androidx.exifinterface.media.ExifInterface;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Core implementation of methods related to File manipulation
@@ -34,27 +36,25 @@ class FileUtils {
     private static final int DEGREES_180 = 180;
     private static final int DEGREES_270 = 270;
 
-    static String insertImage(ContentResolver cr,
-                              byte[] source,
-                              String title,
-                              String description, String path) throws IOException {
+    static SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
+    static String insertImage(ContentResolver cr, String path) throws IOException {
 
-        InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(source));
-        String mimeType = URLConnection.guessContentTypeFromStream(inputStream);
-        inputStream.close();
+        Log.d(getTime(), "start");
+        File file = new File(path);
+        Log.d(getTime(), "created file");
+        String mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString());
+        byte[] source = readBytesFromFile(file);
+        Log.d(getTime(), "read bytes");
 
         byte[] rotatedBytes = getRotatedBytes(source, path);
         if (rotatedBytes != null) {
             source = rotatedBytes;
-            Log.d("BYTES ROTATED", "BYTES ROTATED");
-
         }
 
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, title);
-        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        values.put(MediaStore.Images.Media.TITLE, file.getName());
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
         // Add the date meta data to ensure the image is added at the front of the gallery
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
@@ -71,10 +71,12 @@ class FileUtils {
                 if (url != null) {
                     imageOut = cr.openOutputStream(url);
                 }
+                Log.d(getTime(), "started write");
                 try {
                     if (imageOut != null) {
                         imageOut.write(source);
                     }
+                    Log.d(getTime(), "finished write");
                 } finally {
                     if (imageOut != null) {
                         imageOut.close();
@@ -84,8 +86,8 @@ class FileUtils {
                 long id = ContentUris.parseId(url);
                 Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
                         cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-                storeThumbnail(cr, miniThumb, id
-                );
+                storeThumbnail(cr, miniThumb, id);
+                Log.d(getTime(), "created thumbnail");
             } else {
                 if (url != null) {
                     cr.delete(url, null, null);
@@ -107,20 +109,15 @@ class FileUtils {
         return stringUrl;
     }
 
-    static String insertVideo(ContentResolver cr,
-                              byte[] source,
-                              String title,
-                              String description) throws IOException {
+    static String insertVideo(ContentResolver cr, String path) {
 
-
-        InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(source));
-        String mimeType = URLConnection.guessContentTypeFromStream(inputStream);
-        inputStream.close();
+        File file = new File(path);
+        String mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString());
+        byte[] source = readBytesFromFile(file);
 
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, title);
-        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        values.put(MediaStore.Images.Media.TITLE, file.getName());
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
         // Add the date meta data to ensure the image is added at the front of the gallery
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
@@ -175,7 +172,7 @@ class FileUtils {
             return null;
         }
 
-        Log.d("orientation", Integer.toString(rotationInDegrees));
+        Log.d(getTime(), "started rotation");
 
         Bitmap bitmap = BitmapFactory.decodeByteArray(source, 0, source.length);
         Matrix matrix = new Matrix();
@@ -183,8 +180,12 @@ class FileUtils {
         Bitmap adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
                 bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         bitmap.recycle();
+        Log.d(getTime(), "finished rotation");
 
+        Log.d(getTime(), "started bitmap to array");
         byte[] rotatedBytes = bitmapToArray(adjustedBitmap);
+        Log.d(getTime(), "finished bitmap to array");
+
         adjustedBitmap.recycle();
 
         return rotatedBytes;
@@ -270,10 +271,30 @@ class FileUtils {
 
     private static byte[] bitmapToArray(Bitmap bmp) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.PNG, 0, stream);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] byteArray = stream.toByteArray();
         bmp.recycle();
         return byteArray;
     }
+
+    private static byte[] readBytesFromFile(File file) {
+        int size = (int) file.length();
+        byte[] bytes = new byte[size];
+        try {
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, bytes.length);
+            buf.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bytes;
+    }
+
+    private static String getTime() {
+        return "IMAGE " + dateFormat.format(new Date());
+    }
+
 }
 

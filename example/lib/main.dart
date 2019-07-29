@@ -25,10 +25,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     print("flutter start");
 
-
-    File recodedVideo = await ImagePicker.pickVideo(source: ImageSource.camera);
-    String platformVersion = await CameraContentSaver.saveVideo(
-        recodedVideo.readAsBytesSync(), recodedVideo.path);
+    File recodedImage = await ImagePicker.pickImage(source: ImageSource.camera);
+    String platformVersion =
+        await CameraContentSaver.saveImage(recodedImage.path);
 
     setState(() {
       _platformVersion = platformVersion;

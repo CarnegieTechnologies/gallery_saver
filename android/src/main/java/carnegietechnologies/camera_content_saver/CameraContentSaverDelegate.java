@@ -3,6 +3,7 @@ package carnegietechnologies.camera_content_saver;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 
 import androidx.core.app.ActivityCompat;
 
@@ -23,13 +24,7 @@ public class CameraContentSaverDelegate implements
     private static final String ALREADY_ACTIVE = "already_active";
     private static final String PLUGIN_ALREADY_ACTIVE = "camera content saver is already active";
 
-    private static final String KEY_DATA = "fileData";
-    private static final String KEY_NAME = "title";
-    private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_PATH = "path";
-
-    private static final String DEFAULT_NAME = "cameraImage";
-    private static final String DEFAULT_DESCRIPTION = "cameraDescription";
 
     private final Activity activity;
 
@@ -78,21 +73,15 @@ public class CameraContentSaverDelegate implements
      * @param methodCall - method call
      */
     private void saveVideo(MethodCall methodCall) {
-        byte[] fileData = methodCall.argument(KEY_DATA);
-        String title = methodCall.argument(KEY_NAME) == null ? DEFAULT_NAME
-                : methodCall.argument(KEY_NAME).toString();
+        String tempPath = methodCall.argument(KEY_PATH) == null ? ""
+                : methodCall.argument(KEY_PATH).toString();
 
-        String description = methodCall.argument(KEY_DESCRIPTION) == null ? DEFAULT_DESCRIPTION
-                : methodCall.argument(KEY_DESCRIPTION).toString();
+        String filePath;
 
-        String filePath = null;
 
-        try {
-            filePath = FileUtils.insertVideo(activity.getContentResolver(),
-                    fileData, title, description);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        filePath = FileUtils.insertVideo(activity.getContentResolver(),
+                tempPath);
+
 
         finishWithSuccess(filePath);
     }
@@ -103,26 +92,26 @@ public class CameraContentSaverDelegate implements
      * @param methodCall - method call
      */
     private void saveImage(MethodCall methodCall) {
-        byte[] fileData = methodCall.argument(KEY_DATA);
-        String title = methodCall.argument(KEY_NAME) == null ? DEFAULT_NAME
-                : methodCall.argument(KEY_NAME).toString();
-
-        String description = methodCall.argument(KEY_DESCRIPTION) == null ? DEFAULT_DESCRIPTION
-                : methodCall.argument(KEY_DESCRIPTION).toString();
-
-        String tempPath = methodCall.argument(KEY_PATH) == null ? ""
+        final String tempPath = methodCall.argument(KEY_PATH) == null ? ""
                 : methodCall.argument(KEY_PATH).toString();
-
-        String filePath = null;
-
-        try {
-            filePath = FileUtils.insertImage(activity.getContentResolver(),
-                    fileData, title, description, tempPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        finishWithSuccess(filePath);
+        final Handler handler = new Handler();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final String path = FileUtils.insertImage(
+                            activity.getContentResolver(), tempPath);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishWithSuccess(path);
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private boolean setPendingMethodCallAndResult(
