@@ -7,9 +7,15 @@ class CameraContentSaver {
   static const String methodSaveImage = 'saveImage';
   static const String methodSaveVideo = 'saveVideo';
 
+  static const String pleaseProvidePath = 'Please provide valid file path';
+
   static const MethodChannel _channel = const MethodChannel(channelName);
 
   static Future<String> saveVideo(String path) async {
+    if (path == null || path.isEmpty) {
+      throw ArgumentError(pleaseProvidePath);
+    }
+
     String filePath = await _channel.invokeMethod(
       methodSaveVideo,
       <String, dynamic>{'path': path},
@@ -23,6 +29,10 @@ class CameraContentSaver {
   }
 
   static Future<String> saveImage(String path) async {
+    if (path == null || path.isEmpty) {
+      throw ArgumentError(pleaseProvidePath);
+    }
+
     String filePath = await _channel.invokeMethod(
       methodSaveImage,
       <String, dynamic>{'path': path},
