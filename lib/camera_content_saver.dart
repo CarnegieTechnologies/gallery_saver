@@ -11,6 +11,7 @@ class CameraContentSaver {
 
   static const MethodChannel _channel = const MethodChannel(channelName);
 
+  ///saves video from provided temp path
   static Future<String> saveVideo(String path) async {
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
@@ -28,6 +29,7 @@ class CameraContentSaver {
     return filePath;
   }
 
+  ///saves image from provided temp path
   static Future<String> saveImage(String path) async {
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);

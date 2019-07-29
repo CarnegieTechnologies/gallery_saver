@@ -1,3 +1,3 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Initial release. Image and video from provided temp path get saved to device(Gallery and Photos).
