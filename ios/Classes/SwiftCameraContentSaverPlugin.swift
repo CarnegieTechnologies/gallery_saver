@@ -4,6 +4,14 @@ import Photos
 
 public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
     
+    let path = "path"
+    let permissionDenied = "permission denied"
+    let pleaseGrantAccess = "please grant photos access"
+    let imageSaved = "image saved"
+    let videoSaved = "videoSaved"
+    let failedToSaveImage = "failed to save image"
+    let failedToSaveVideo = "failed to save video"
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "camera_content_saver", binaryMessenger: registrar.messenger())
         let instance = SwiftCameraContentSaverPlugin()
@@ -20,9 +28,16 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Tries to save image to the photos app.
+    /// If user hasn't already permitted saving to the photos, it will be requested
+    /// to do so.
+    ///
+    /// - Parameters:
+    ///   - result: flutter result that gets sent back to the dart code
+    ///   - call: method object with params for saving image
     func saveImage(result: @escaping FlutterResult, call: FlutterMethodCall) {
         let args = call.arguments as? Dictionary<String, Any>
-        let path = args!["path"] as! String
+        let path = args![self.path] as! String
         
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .notDetermined {
@@ -30,17 +45,23 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
                 if status == .authorized{
                     self.performSavingImage(path: path, flutterResult: result)
                 } else {
-                    result("permission denied");
+                    result(self.permissionDenied);
                 }
             })
             
         } else if status == .authorized {
             self.performSavingImage(path: path, flutterResult: result)
         } else {
-            result("please grant photos access");
+            result(self.pleaseGrantAccess);
         }
     }
     
+    /// Saves image to the photos app
+    ///
+    /// - Parameters:
+    ///   - path: path to temp file that needs to be stored in photos
+    ///   - flutterResult: flutter result object that needs to be populated after
+    /// operation finishes
     func performSavingImage(path: String, flutterResult: @escaping FlutterResult){
         
         let url = URL(fileURLWithPath: path)
@@ -49,33 +70,46 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
             PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url)
         }) { (success, error) in
             if success {
-                flutterResult("image saved")
+                flutterResult(self.imageSaved)
             } else {
-                flutterResult("failed to save image")
+                flutterResult(self.failedToSaveImage)
             }
         }
     }
     
+    
+    /// If user hasn't already permitted saving to the photos, it will be requested
+    /// to do so.
+    ///
+    /// - Parameters:
+    ///   - result: flutter result that gets sent back to the dart code
+    ///   - call: method object with params for saving video
     func saveVideo(result: @escaping FlutterResult, call: FlutterMethodCall) {
         let args = call.arguments as? Dictionary<String, Any>
-        let path = args!["path"] as! String
+        let path = args![self.path] as! String
         
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .notDetermined {
             PHPhotoLibrary.requestAuthorization({status in
                 if status == .authorized{
-                    self.performSavingVideo( flutterResult: result, path: path)
+                    self.performSavingVideo(flutterResult: result, path: path)
                 } else {
-                    result("permission denied");
+                    result(self.permissionDenied);
                 }
             })
         } else if status == .authorized {
             self.performSavingVideo( flutterResult: result, path: path)
         } else {
-            result("please grant photos access");
+            result(self.pleaseGrantAccess);
         }
     }
     
+    /// Saves video to the photos app
+    ///
+    /// - Parameters:
+    ///   - path: path to temp file that needs to be stored in photos
+    ///   - flutterResult: flutter result object that needs to be populated after
+    /// operation finishes
     func performSavingVideo(flutterResult: @escaping FlutterResult, path: String){
         
         let url = URL(fileURLWithPath: path)
@@ -84,9 +118,9 @@ public class SwiftCameraContentSaverPlugin: NSObject, FlutterPlugin {
             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
         }) { (success, error) in
             if success {
-                flutterResult("video saved")
+                flutterResult(self.videoSaved)
             } else {
-                flutterResult("failed to save video")
+                flutterResult(self.failedToSaveVideo)
             }
         }
     }

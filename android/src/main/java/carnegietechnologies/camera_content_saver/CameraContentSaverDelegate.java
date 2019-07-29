@@ -7,8 +7,6 @@ import android.os.Handler;
 
 import androidx.core.app.ActivityCompat;
 
-import java.io.IOException;
-
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -46,7 +44,7 @@ public class CameraContentSaverDelegate implements
      */
     void saveFile(MethodCall methodCall, MethodChannel.Result result, boolean isImage) {
         if (!setPendingMethodCallAndResult(methodCall, result)) {
-            finishWithAlreadyActiveError();
+            finishWithError();
             return;
         }
 
@@ -78,10 +76,8 @@ public class CameraContentSaverDelegate implements
 
         String filePath;
 
-
         filePath = FileUtils.insertVideo(activity.getContentResolver(),
                 tempPath);
-
 
         finishWithSuccess(filePath);
     }
@@ -98,18 +94,14 @@ public class CameraContentSaverDelegate implements
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    final String path = FileUtils.insertImage(
-                            activity.getContentResolver(), tempPath);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            finishWithSuccess(path);
-                        }
-                    });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                final String path = FileUtils.insertImage(
+                        activity.getContentResolver(), tempPath);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        finishWithSuccess(path);
+                    }
+                });
             }
         }).start();
     }
@@ -123,10 +115,6 @@ public class CameraContentSaverDelegate implements
         this.methodCall = methodCall;
         pendingResult = result;
         return true;
-    }
-
-    private void finishWithAlreadyActiveError() {
-        finishWithError();
     }
 
     private void finishWithError() {

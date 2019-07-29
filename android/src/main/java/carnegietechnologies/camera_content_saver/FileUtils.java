@@ -21,8 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Core implementation of methods related to File manipulation
@@ -36,18 +34,21 @@ class FileUtils {
     private static final int DEGREES_180 = 180;
     private static final int DEGREES_270 = 270;
 
-    static SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    /**
+     * Inserts image into external storage
+     *
+     * @param contentResolver - content resolver
+     * @param path            - path to temp file that needs to be stored
+     * @return path to newly created file
+     */
+    static String insertImage(ContentResolver contentResolver, String path) {
 
-    static String insertImage(ContentResolver cr, String path) throws IOException {
-
-        Log.d(getTime(), "start");
         File file = new File(path);
-        Log.d(getTime(), "created file");
         String mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString());
-        byte[] source = readBytesFromFile(file);
-        Log.d(getTime(), "read bytes");
+        byte[] source = getBytesFromFile(file);
 
-        byte[] rotatedBytes = getRotatedBytes(source, path);
+        byte[] rotatedBytes = getRotatedBytesIfNecessary(source, path);
+
         if (rotatedBytes != null) {
             source = rotatedBytes;
         }
@@ -56,64 +57,62 @@ class FileUtils {
         values.put(MediaStore.Images.Media.TITLE, file.getName());
         values.put(MediaStore.Images.Media.DISPLAY_NAME, file.getName());
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
-        // Add the date meta data to ensure the image is added at the front of the gallery
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis());
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
 
-        Uri url = null;
+        Uri imageUri = null;
         String stringUrl = "";
 
         try {
-            url = cr.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
             if (source != null) {
-                OutputStream imageOut = null;
-                if (url != null) {
-                    imageOut = cr.openOutputStream(url);
+                OutputStream outputStream = null;
+                if (imageUri != null) {
+                    outputStream = contentResolver.openOutputStream(imageUri);
                 }
-                Log.d(getTime(), "started write");
                 try {
-                    if (imageOut != null) {
-                        imageOut.write(source);
+                    if (outputStream != null) {
+                        outputStream.write(source);
                     }
-                    Log.d(getTime(), "finished write");
                 } finally {
-                    if (imageOut != null) {
-                        imageOut.close();
+                    if (outputStream != null) {
+                        outputStream.close();
                     }
                 }
 
-                long id = ContentUris.parseId(url);
+                long pathId = ContentUris.parseId(imageUri);
                 Bitmap miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
-                        cr, id, MediaStore.Images.Thumbnails.MINI_KIND, null);
-                storeThumbnail(cr, miniThumb, id);
-                Log.d(getTime(), "created thumbnail");
+                        contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null);
+                storeThumbnail(contentResolver, miniThumb, pathId);
             } else {
-                if (url != null) {
-                    cr.delete(url, null, null);
+                if (imageUri != null) {
+                    contentResolver.delete(imageUri, null, null);
                 }
-                url = null;
+                imageUri = null;
             }
-        } catch (Exception e) {
-            if (url != null) {
-                cr.delete(url, null, null);
-                url = null;
-            }
+        } catch (IOException e) {
+            contentResolver.delete(imageUri, null, null);
+            imageUri = null;
         }
 
-        if (url != null) {
-            stringUrl = getFilePathFromContentUri(url, cr);
+        if (imageUri != null) {
+            stringUrl = getFilePathFromContentUri(imageUri, contentResolver);
         }
-
 
         return stringUrl;
     }
 
-    static String insertVideo(ContentResolver cr, String path) {
+    /**
+     * @param contentResolver - content resolver
+     * @param path            - path to temp file that needs to be stored
+     * @return path to newly created file
+     */
+    static String insertVideo(ContentResolver contentResolver, String path) {
 
         File file = new File(path);
         String mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString());
-        byte[] source = readBytesFromFile(file);
+        byte[] source = getBytesFromFile(file);
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, file.getName());
@@ -127,12 +126,12 @@ class FileUtils {
         String stringUrl = "";
 
         try {
-            url = cr.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
 
             if (source != null) {
                 OutputStream videoOutStream = null;
                 if (url != null) {
-                    videoOutStream = cr.openOutputStream(url);
+                    videoOutStream = contentResolver.openOutputStream(url);
                 }
                 try {
                     if (videoOutStream != null) {
@@ -145,34 +144,42 @@ class FileUtils {
                 }
             } else {
                 if (url != null) {
-                    cr.delete(url, null, null);
+                    contentResolver.delete(url, null, null);
                 }
                 url = null;
             }
         } catch (Exception e) {
             if (url != null) {
-                cr.delete(url, null, null);
+                contentResolver.delete(url, null, null);
                 url = null;
             }
         }
 
         if (url != null) {
-            stringUrl = getFilePathFromContentUri(url, cr);
+            stringUrl = getFilePathFromContentUri(url, contentResolver);
         }
 
 
         return stringUrl;
     }
 
-    private static byte[] getRotatedBytes(byte[] source, String path)
-            throws IOException {
-        int rotationInDegrees = exifToDegrees(getRotation(path));
+    /**
+     * @param source -  array of bytes that will maybe be rotated
+     * @param path   - path to image that needs to be checked for rotation
+     * @return - array of bytes from rotated image, if rotation needs to be performed
+     */
+    private static byte[] getRotatedBytesIfNecessary(byte[] source, String path) {
+        int rotationInDegrees = 0;
+
+        try {
+            rotationInDegrees = exifToDegrees(getRotation(path));
+        } catch (IOException e) {
+            Log.d(TAG, e.toString());
+        }
 
         if (rotationInDegrees == 0) {
             return null;
         }
-
-        Log.d(getTime(), "started rotation");
 
         Bitmap bitmap = BitmapFactory.decodeByteArray(source, 0, source.length);
         Matrix matrix = new Matrix();
@@ -180,23 +187,24 @@ class FileUtils {
         Bitmap adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
                 bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         bitmap.recycle();
-        Log.d(getTime(), "finished rotation");
 
-        Log.d(getTime(), "started bitmap to array");
         byte[] rotatedBytes = bitmapToArray(adjustedBitmap);
-        Log.d(getTime(), "finished bitmap to array");
 
         adjustedBitmap.recycle();
 
         return rotatedBytes;
     }
 
+    /**
+     * @param contentResolver - content resolver
+     * @param source          - bitmap source image
+     * @param id              - path id
+     */
     private static void storeThumbnail(
-            ContentResolver cr,
+            ContentResolver contentResolver,
             Bitmap source,
             long id) {
 
-        // create the matrix to scale it
         Matrix matrix = new Matrix();
 
         float scaleX = (float) SCALE_FACTOR / source.getWidth();
@@ -216,15 +224,16 @@ class FileUtils {
         values.put(MediaStore.Images.Thumbnails.HEIGHT, thumb.getHeight());
         values.put(MediaStore.Images.Thumbnails.WIDTH, thumb.getWidth());
 
-        Uri url = cr.insert(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values);
+        Uri thumbUri = contentResolver.insert(
+                MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values);
 
         try {
-            OutputStream thumbOut = null;
-            if (url != null) {
-                thumbOut = cr.openOutputStream(url);
+            OutputStream outputStream = null;
+            if (thumbUri != null) {
+                outputStream = contentResolver.openOutputStream(thumbUri);
             }
-            if (thumbOut != null) {
-                thumbOut.close();
+            if (outputStream != null) {
+                outputStream.close();
             }
         } catch (FileNotFoundException ex) {
             Log.d(TAG, ex.toString());
@@ -233,12 +242,18 @@ class FileUtils {
         }
     }
 
-    private static String getFilePathFromContentUri(Uri selectedVideoUri,
+    /**
+     * @param uri             - provided file uri
+     * @param contentResolver - content resolver
+     * @return path from provided Uri
+     */
+    private static String getFilePathFromContentUri(Uri uri,
                                                     ContentResolver contentResolver) {
         String filePath = null;
         String[] filePathColumn = {MediaStore.MediaColumns.DATA};
 
-        Cursor cursor = contentResolver.query(selectedVideoUri, filePathColumn, null, null, null);
+        Cursor cursor = contentResolver.query(uri, filePathColumn,
+                null, null, null);
 
         int columnIndex;
 
@@ -252,17 +267,27 @@ class FileUtils {
         return filePath;
     }
 
-    private static int exifToDegrees(int exifOrientation) {
-        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
+    /**
+     * @param orientation - exif orientation
+     * @return how many degrees is file rotated
+     */
+    private static int exifToDegrees(int orientation) {
+        if (orientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return DEGREES_90;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_180) {
             return DEGREES_180;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+        } else if (orientation == ExifInterface.ORIENTATION_ROTATE_270) {
             return DEGREES_270;
         }
         return 0;
     }
 
+    /**
+     * @param path - path to bitmap that needs to be checked for orientation
+     * @return exif orientation
+     * @throws IOException - can happen while creating {@link ExifInterface} object for
+     *                     provided path
+     */
     private static int getRotation(String path) throws IOException {
         ExifInterface exif = new ExifInterface(path);
         return exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
@@ -277,7 +302,7 @@ class FileUtils {
         return byteArray;
     }
 
-    private static byte[] readBytesFromFile(File file) {
+    private static byte[] getBytesFromFile(File file) {
         int size = (int) file.length();
         byte[] bytes = new byte[size];
         try {
@@ -291,10 +316,5 @@ class FileUtils {
         }
         return bytes;
     }
-
-    private static String getTime() {
-        return "IMAGE " + dateFormat.format(new Date());
-    }
-
 }
 
