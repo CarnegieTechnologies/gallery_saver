@@ -7,7 +7,13 @@ void main() {
 
   setUp(() {
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      return '42';
+      switch (methodCall.method) {
+        case 'saveImage':
+          return 'image saved';
+        case 'saveVideo':
+          return 'video saved';
+      }
+      return 'unknown method';
     });
   });
 
@@ -15,7 +21,13 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await GallerySaver.platformVersion, '42');
+  test('save image', () async {
+    expect(await GallerySaver.saveImage('/storage/emulated/...'),
+        'image saved');
+  });
+
+  test('save video', () async {
+    expect(await GallerySaver.saveVideo('/storage/emulated/...'),
+        'video saved');
   });
 }
