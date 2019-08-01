@@ -1,8 +1,7 @@
 name: gallery_saver
 description: Saves images and videos to gallery and photos.
 version: 0.0.1
-author:
-homepage:
+author: Carnegie Technologies d.o.o <devoffice@carnegietechnologies.com>
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
