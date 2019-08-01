@@ -3,6 +3,8 @@ description: Saves images and videos to gallery and photos.
 version: 0.0.1
 authors:
   - Jelena Lecic <jelena.carnegie@gmail.com>
+  - Vladimir Milosevic <vlada3003@gmail.com>
+  - Vladimir Milosevic <vmilosevic@carnegietechnologies.com>
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
 environment:
