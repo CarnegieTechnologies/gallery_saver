@@ -140,12 +140,11 @@ internal object FileUtils {
             stringUrl = getFilePathFromContentUri(url, contentResolver)
         }
 
-
         return stringUrl!!
     }
 
     /**
-     * @param source -  array of bytes that will maybe be rotated
+     * @param source -  array of bytes that will be rotated if it needs to be done
      * @param path   - path to image that needs to be checked for rotation
      * @return - array of bytes from rotated image, if rotation needs to be performed
      */
@@ -224,19 +223,16 @@ internal object FileUtils {
     private fun getFilePathFromContentUri(uri: Uri,
                                           contentResolver: ContentResolver): String? {
         var filePath: String? = null
-        val filePathColumn = arrayOf(MediaStore.MediaColumns.DATA)
 
-        val cursor = contentResolver.query(uri, filePathColumn, null, null, null)
+        val cursor = contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DATA), null, null, null)
 
-        val columnIndex: Int
+        var columnIndex: Int
 
-        if (cursor != null) {
+        cursor?.use {
             cursor.moveToFirst()
-            columnIndex = cursor.getColumnIndex(filePathColumn[0])
+            columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
             filePath = cursor.getString(columnIndex)
-            cursor.close()
         }
-
         return filePath
     }
 

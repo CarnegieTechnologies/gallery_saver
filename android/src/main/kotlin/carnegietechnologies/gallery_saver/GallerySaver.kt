@@ -62,12 +62,12 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
         else
             methodCall.argument<Any>(KEY_PATH)!!.toString()
 
-        val filePath: String
-
-        filePath = FileUtils.insertVideo(activity.contentResolver,
-                tempPath)
-
-        finishWithSuccess(filePath)
+        uiScope.launch {
+            val path = async(Dispatchers.IO) {
+                FileUtils.insertVideo(activity.contentResolver, tempPath)
+            }
+            finishWithSuccess(path.await())
+        }
     }
 
 
@@ -130,6 +130,7 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
                 }
             }
         } else {
+            finishWithError()
             return false
         }
         return true

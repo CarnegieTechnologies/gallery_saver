@@ -7,26 +7,26 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 class GallerySaverPlugin private constructor(
-        private val cameraContentSaver: GallerySaver) : MethodCallHandler {
+        private val gallerySaver: GallerySaver) : MethodCallHandler {
 
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(),
-              "gallery_saver")
-      val cameraContentSaver = GallerySaver(registrar.activity())
-      registrar.addRequestPermissionsResultListener(cameraContentSaver)
-      val instance = GallerySaverPlugin(
-              cameraContentSaver)
-      channel.setMethodCallHandler(instance)
+    companion object {
+        @JvmStatic
+        fun registerWith(registrar: Registrar) {
+            val channel = MethodChannel(registrar.messenger(),
+                    "gallery_saver")
+            val gallerySaver = GallerySaver(registrar.activity())
+            registrar.addRequestPermissionsResultListener(gallerySaver)
+            val instance = GallerySaverPlugin(
+                    gallerySaver)
+            channel.setMethodCallHandler(instance)
+        }
     }
-  }
 
-  override fun onMethodCall(call: MethodCall, result: Result) {
-    when (call.method) {
-      "saveImage" -> cameraContentSaver.saveFile(call, result, true)
-      "saveVideo" -> cameraContentSaver.saveFile(call, result, false)
-      else -> result.notImplemented()
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "saveImage" -> gallerySaver.saveFile(call, result, true)
+            "saveVideo" -> gallerySaver.saveFile(call, result, false)
+            else -> result.notImplemented()
+        }
     }
-  }
 }
