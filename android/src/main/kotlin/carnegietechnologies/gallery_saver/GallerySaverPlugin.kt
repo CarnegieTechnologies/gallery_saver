@@ -6,20 +6,27 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class GallerySaverPlugin: MethodCallHandler {
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(), "gallery_saver")
-      channel.setMethodCallHandler(GallerySaverPlugin())
-    }
-  }
+class GallerySaverPlugin private constructor(
+        private val gallerySaver: GallerySaver) : MethodCallHandler {
 
-  override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else {
-      result.notImplemented()
+    companion object {
+        @JvmStatic
+        fun registerWith(registrar: Registrar) {
+            val channel = MethodChannel(registrar.messenger(),
+                    "gallery_saver")
+            val gallerySaver = GallerySaver(registrar.activity())
+            registrar.addRequestPermissionsResultListener(gallerySaver)
+            val instance = GallerySaverPlugin(
+                    gallerySaver)
+            channel.setMethodCallHandler(instance)
+        }
     }
-  }
+
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "saveImage" -> gallerySaver.saveFile(call, result, true)
+            "saveVideo" -> gallerySaver.saveFile(call, result, false)
+            else -> result.notImplemented()
+        }
+    }
 }
