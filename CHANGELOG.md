@@ -1,3 +1,7 @@
+## 0.0.3
+
+* Fixed crash when requesting storage access on Android.
+
 ## 0.0.2
 
 * Added swift version and changed description.
