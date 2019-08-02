@@ -130,7 +130,6 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
                 }
             }
         } else {
-            finishWithError()
             return false
         }
         return true
