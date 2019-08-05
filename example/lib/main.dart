@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           firstButtonText = 'saving in progress...';
         });
-        GallerySaver.saveImage(recordedImage.path).then((String path) {
+        GallerySaver.saveImage(recordedImage.path).then((bool success) {
           setState(() {
             firstButtonText = 'image saved!';
           });
@@ -80,7 +80,7 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           secondButtonText = 'saving in progress...';
         });
-        GallerySaver.saveVideo(recordedVideo.path).then((String path) {
+        GallerySaver.saveVideo(recordedVideo.path).then((bool success) {
           setState(() {
             secondButtonText = 'video saved!';
           });

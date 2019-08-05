@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Return type changed to bool(true for success and false for everything else)
+
 ## 0.0.3
 
 * Fixed crash when requesting storage access on Android.

@@ -4,12 +4,6 @@ import Photos
 
 public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
     let path = "path"
-    let permissionDenied = "permission denied"
-    let pleaseGrantAccess = "please grant photos access"
-    let imageSaved = "image saved"
-    let videoSaved = "videoSaved"
-    let failedToSaveImage = "failed to save image"
-    let failedToSaveVideo = "failed to save video"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "gallery_saver", binaryMessenger: registrar.messenger())
@@ -44,14 +38,14 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
                 if status == .authorized{
                     self.performSavingImage(path: path, flutterResult: result)
                 } else {
-                    result(self.permissionDenied);
+                    result(false);
                 }
             })
             
         } else if status == .authorized {
             self.performSavingImage(path: path, flutterResult: result)
         } else {
-            result(self.pleaseGrantAccess);
+            result(false);
         }
     }
     
@@ -69,9 +63,9 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url)
         }) { (success, error) in
             if success {
-                flutterResult(self.imageSaved)
+                flutterResult(true)
             } else {
-                flutterResult(self.failedToSaveImage)
+                flutterResult(false)
             }
         }
     }
@@ -93,13 +87,13 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
                 if status == .authorized{
                     self.performSavingVideo(flutterResult: result, path: path)
                 } else {
-                    result(self.permissionDenied);
+                    result(false);
                 }
             })
         } else if status == .authorized {
             self.performSavingVideo( flutterResult: result, path: path)
         } else {
-            result(self.pleaseGrantAccess);
+            result(false);
         }
     }
     
@@ -117,9 +111,9 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
         }) { (success, error) in
             if success {
-                flutterResult(self.videoSaved)
+                flutterResult(true)
             } else {
-                flutterResult(self.failedToSaveVideo)
+                flutterResult(false)
             }
         }
     }

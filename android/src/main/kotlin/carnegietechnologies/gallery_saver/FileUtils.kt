@@ -30,9 +30,9 @@ internal object FileUtils {
      *
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
-     * @return path to newly created file
+     * @return true if image was saved successfully
      */
-    fun insertImage(contentResolver: ContentResolver, path: String): String {
+    fun insertImage(contentResolver: ContentResolver, path: String): Boolean {
 
         val file = File(path)
         val mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString())
@@ -52,7 +52,6 @@ internal object FileUtils {
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
 
         var imageUri: Uri? = null
-        var stringUrl: String? = ""
 
         try {
             imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
@@ -79,22 +78,18 @@ internal object FileUtils {
             }
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
-            imageUri = null
+            return false
         }
 
-        if (imageUri != null) {
-            stringUrl = getFilePathFromContentUri(imageUri, contentResolver)
-        }
-
-        return stringUrl!!
+        return true
     }
 
     /**
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
-     * @return path to newly created file
+     * @return true if video was saved successfully
      */
-    fun insertVideo(contentResolver: ContentResolver, path: String): String {
+    fun insertVideo(contentResolver: ContentResolver, path: String): Boolean {
 
         val file = File(path)
         val mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString())
@@ -109,7 +104,6 @@ internal object FileUtils {
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
 
         var url: Uri? = null
-        var stringUrl: String? = ""
 
         try {
             url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
@@ -132,15 +126,11 @@ internal object FileUtils {
         } catch (e: Exception) {
             if (url != null) {
                 contentResolver.delete(url, null, null)
-                url = null
             }
+            return false
         }
 
-        if (url != null) {
-            stringUrl = getFilePathFromContentUri(url, contentResolver)
-        }
-
-        return stringUrl!!
+        return true
     }
 
     /**
@@ -213,27 +203,6 @@ internal object FileUtils {
                 outputStream = contentResolver.openOutputStream(thumbUri)
             }
         }
-    }
-
-    /**
-     * @param uri             - provided file uri
-     * @param contentResolver - content resolver
-     * @return path from provided Uri
-     */
-    private fun getFilePathFromContentUri(uri: Uri,
-                                          contentResolver: ContentResolver): String? {
-        var filePath: String? = null
-
-        val cursor = contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.DATA), null, null, null)
-
-        var columnIndex: Int
-
-        cursor?.use {
-            cursor.moveToFirst()
-            columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
-            filePath = cursor.getString(columnIndex)
-        }
-        return filePath
     }
 
     /**
