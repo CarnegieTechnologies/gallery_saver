@@ -63,10 +63,11 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
             methodCall.argument<Any>(KEY_PATH)!!.toString()
 
         uiScope.launch {
-            val path = async(Dispatchers.IO) {
+            val success = async(Dispatchers.IO) {
                 FileUtils.insertVideo(activity.contentResolver, tempPath)
             }
-            finishWithSuccess(path.await())
+            success.await()
+            finishWithSuccess()
         }
     }
 
@@ -83,10 +84,11 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
             methodCall.argument<Any>(KEY_PATH).toString()
 
         uiScope.launch {
-            val path = async(Dispatchers.IO) {
+            val success = async(Dispatchers.IO) {
                 FileUtils.insertImage(activity.contentResolver, tempPath)
             }
-            finishWithSuccess(path.await())
+            success.await()
+            finishWithSuccess()
         }
     }
 
@@ -102,12 +104,12 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
     }
 
     private fun finishWithError() {
-        pendingResult!!.error(ALREADY_ACTIVE, PLUGIN_ALREADY_ACTIVE, null)
+        pendingResult!!.success(false)
         clearMethodCallAndResult()
     }
 
-    private fun finishWithSuccess(imagePath: String) {
-        pendingResult!!.success(imagePath)
+    private fun finishWithSuccess() {
+        pendingResult!!.success(true)
         clearMethodCallAndResult()
     }
 
@@ -138,9 +140,6 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
     companion object {
 
         private const val REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2345
-
-        private const val ALREADY_ACTIVE = "already_active"
-        private const val PLUGIN_ALREADY_ACTIVE = "camera content saver is already active"
 
         private const val KEY_PATH = "path"
     }

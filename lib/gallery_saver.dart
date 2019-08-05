@@ -12,38 +12,30 @@ class GallerySaver {
   static const MethodChannel _channel = const MethodChannel(channelName);
 
   ///saves video from provided temp path
-  static Future<String> saveVideo(String path) async {
+  static Future<bool> saveVideo(String path) async {
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
     }
 
-    String filePath = await _channel.invokeMethod(
+    bool result = await _channel.invokeMethod(
       methodSaveVideo,
       <String, dynamic>{'path': path},
     );
 
-    //process ios return filePath
-    if (filePath.startsWith("file://")) {
-      filePath = filePath.replaceAll("file://", "");
-    }
-    return filePath;
+    return result;
   }
 
   ///saves image from provided temp path
-  static Future<String> saveImage(String path) async {
+  static Future<bool> saveImage(String path) async {
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
     }
 
-    String filePath = await _channel.invokeMethod(
+    bool result = await _channel.invokeMethod(
       methodSaveImage,
       <String, dynamic>{'path': path},
     );
 
-    //process ios return filePath
-    if (filePath.startsWith("file://")) {
-      filePath = filePath.replaceAll("file://", "");
-    }
-    return filePath;
+    return result;
   }
 }
