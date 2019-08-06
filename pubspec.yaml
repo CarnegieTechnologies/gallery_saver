@@ -1,6 +1,6 @@
 name: gallery_saver
 description: Saves images and videos to gallery and photos. Temporary file from camera gets saved to external storage by passing its path to the methods saveImage and saveVideo.
-version: 0.0.4
+version: 0.0.5
 author: Carnegie Technologies d.o.o <devoffice@carnegietechnologies.com>
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
