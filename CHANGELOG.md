@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Fix for colliding permission request with image_picker plugin
+
 ## 0.0.4
 
 * Return type changed to bool(true for success and false for everything else)
