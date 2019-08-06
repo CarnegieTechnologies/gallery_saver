@@ -139,7 +139,7 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
 
     companion object {
 
-        private const val REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2345
+        private const val REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2408
 
         private const val KEY_PATH = "path"
     }
