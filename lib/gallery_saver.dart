@@ -12,8 +12,8 @@ class GallerySaver {
   static const String methodSaveVideo = 'saveVideo';
 
   static const String pleaseProvidePath = 'Please provide valid file path.';
-  static const String fileIsNotVideo = 'File on path is not video.';
-  static const String fileIsNotImage = 'File on path is not image.';
+  static const String fileIsNotVideo = 'File on path is not a video.';
+  static const String fileIsNotImage = 'File on path is not an image.';
   static const MethodChannel _channel = const MethodChannel(channelName);
 
   ///saves video from provided temp path

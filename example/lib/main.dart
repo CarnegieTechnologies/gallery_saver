@@ -74,18 +74,24 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _recordVideo() async {
-    ImagePicker.pickVideo(source: ImageSource.camera)
-        .then((File recordedVideo) {
-      if (recordedVideo != null && recordedVideo.path != null) {
-        setState(() {
-          secondButtonText = 'saving in progress...';
-        });
-        GallerySaver.saveVideo(recordedVideo.path).then((bool success) {
-          setState(() {
-            secondButtonText = 'video saved!';
-          });
-        });
-      }
+//    ImagePicker.pickVideo(source: ImageSource.camera)
+//        .then((File recordedVideo) {
+//      if (recordedVideo != null && recordedVideo.path != null) {
+//        setState(() {
+//          secondButtonText = 'saving in progress...';
+//        });
+//        GallerySaver.saveVideo(recordedVideo.path).then((bool success) {
+//          setState(() {
+//            secondButtonText = 'video saved!';
+//          });
+//        });
+//      }
+//    });
+    String path = 'https://octopus-server-ireland-demo-influencer.s3.eu-west-1.amazonaws.com/p/bece03ae-9658-11e9-817d-e79e382c1c2e/e9e10994-b915-11e9-9076-5f4b84e1384c/008AADFD-91BD-4DBD-8E40-43BE0EF1D7A0_transcoded.MOV';
+    GallerySaver.saveVideo(path).then((bool success) {
+      setState(() {
+        secondButtonText = 'video saved!';
+      });
     });
   }
 }

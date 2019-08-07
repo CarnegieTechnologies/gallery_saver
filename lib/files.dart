@@ -1,10 +1,16 @@
-bool isLocalFilePath(String path) => !path.contains('http');
+const List<String> videoFormats = ['mp4', 'mov', 'avi', 'wmv'];
+const List<String> imageFormats = ['jpeg', 'png', 'jpg', '3gp'];
 
-bool isVideo(String path) => ['mp4', 'mov', 'avi', 'wmv']
-    .contains(_getFileExtensionFromPath(path).toLowerCase());
+bool isLocalFilePath(String path) {
+  Uri uri = Uri.parse(path);
+  return uri.scheme.contains('http');
+}
 
-bool isImage(String path) => ['jpeg', 'png', 'jpg', '3gp']
-    .contains(_getFileExtensionFromPath(path).toLowerCase());
+bool isVideo(String path) =>
+    videoFormats.contains(_getFileExtensionFromPath(path).toLowerCase());
+
+bool isImage(String path) =>
+    imageFormats.contains(_getFileExtensionFromPath(path).toLowerCase());
 
 String _getFileExtensionFromPath(String path) {
   print(path?.substring(path.lastIndexOf('.') + 1));
@@ -12,7 +18,7 @@ String _getFileExtensionFromPath(String path) {
 }
 
 String getFilenameFromPath(String path) {
-  Uri uri = Uri.parse(null);
+  Uri uri = Uri.parse(path);
   print(uri.pathSegments.last);
   return uri.pathSegments.last;
 }
