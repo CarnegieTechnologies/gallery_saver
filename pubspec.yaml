@@ -14,6 +14,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  path_provider: ^1.2.0
+  http: ^0.12.0+2
 
 flutter:
 
