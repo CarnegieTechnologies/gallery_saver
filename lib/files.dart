@@ -3,7 +3,7 @@ const List<String> imageFormats = ['jpeg', 'png', 'jpg', '3gp'];
 
 bool isLocalFilePath(String path) {
   Uri uri = Uri.parse(path);
-  return uri.scheme.contains('http');
+  return !uri.scheme.contains('http');
 }
 
 bool isVideo(String path) =>
