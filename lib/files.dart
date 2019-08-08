@@ -6,7 +6,8 @@ const List<String> videoFormats = [
   '.avi',
   '.wmv',
   '.3gp',
-  '.mkv'
+  '.mkv',
+  '.flv'
 ];
 const List<String> imageFormats = [
   '.jpeg',
@@ -15,7 +16,7 @@ const List<String> imageFormats = [
   '.gif',
   '.webp',
   '.tif',
-  '.flv'
+  '.heic'
 ];
 const http = 'http';
 
