@@ -1,6 +1,9 @@
 # Gallery Saver for Flutter
 
-Saves images and videos to device(Gallery and Photos).
+Saves images and videos to gallery and photos.
+Temporary file from camera or network image/video gets saved to external storage by passing its url
+to the methods saveImage and saveVideo.
+
 NOTE: If you want to save network image or video link, it has to contain 'http/https' prefix.
 
 

@@ -1,6 +1,21 @@
 import 'package:path/path.dart';
-const List<String> videoFormats = ['.mp4', '.mov', '.avi', '.wmv', '.3gp'];
-const List<String> imageFormats = ['.jpeg', '.png', '.jpg'];
+
+const List<String> videoFormats = [
+  '.mp4',
+  '.mov',
+  '.avi',
+  '.wmv',
+  '.3gp',
+  '.mkv'
+];
+const List<String> imageFormats = [
+  '.jpeg',
+  '.png',
+  '.jpg',
+  '.gif',
+  '.webp',
+  '.tif'
+];
 const http = 'http';
 
 bool isLocalFilePath(String path) {
@@ -13,4 +28,3 @@ bool isVideo(String path) =>
 
 bool isImage(String path) =>
     imageFormats.contains(extension(path).toLowerCase());
-
