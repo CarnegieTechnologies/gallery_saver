@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Changed description
+
 ## 1.0.0
 
 * Support saving network images and videos to gallery
