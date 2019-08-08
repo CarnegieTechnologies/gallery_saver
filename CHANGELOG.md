@@ -1,4 +1,4 @@
-## 0.0.6
+## 1.0.0
 
 * Support saving network images and videos to gallery
 

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gallery_saver/files.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 
 class GallerySaver {
   static const String channelName = 'gallery_saver';
@@ -70,7 +71,7 @@ class GallerySaver {
     var req = await _client.get(Uri.parse(url));
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
-    File file = new File('$dir/${getFilenameFromPath(url)}');
+    File file = new File('$dir/${basename(url)}');
     await file.writeAsBytes(bytes);
     print('File size:${await file.length()}');
     print(file.path);

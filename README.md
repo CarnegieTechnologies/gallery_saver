@@ -1,6 +1,7 @@
 # Gallery Saver for Flutter
 
-Saves images and videos to device(Gallery and Photos)
+Saves images and videos to device(Gallery and Photos).
+NOTE: If you want to save network image or video link, it has to contain 'http/https' prefix.
 
 
 ## Installation
@@ -108,6 +109,25 @@ class _MyAppState extends State<MyApp> {
           });
         });
       }
+    });
+  }
+  void _saveNetworkVideo() async {
+    String path =
+        'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
+    GallerySaver.saveVideo(path).then((bool success) {
+      setState(() {
+        print('Video is saved');
+      });
+    });
+  }
+
+  void _saveNetworkImage() async {
+    String path =
+        'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
+    GallerySaver.saveImage(path).then((bool success) {
+      setState(() {
+        print('Image is saved');
+      });
     });
   }
 }
