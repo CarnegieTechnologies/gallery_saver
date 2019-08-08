@@ -1,6 +1,6 @@
 name: gallery_saver
-description: Saves images and videos to gallery and photos. Temporary file from camera gets saved to external storage by passing its path to the methods saveImage and saveVideo.
-version: 0.0.5
+description: Saves images and videos to gallery and photos. Temporary file from camera or network image/video gets saved to external storage by passing its path to the methods saveImage and saveVideo.
+version: 1.0.0
 author: Carnegie Technologies d.o.o <devoffice@carnegietechnologies.com>
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
@@ -14,6 +14,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  path_provider: ^1.2.0
+  http: ^0.12.0+2
 
 flutter:
 

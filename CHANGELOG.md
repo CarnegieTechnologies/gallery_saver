@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Support saving network images and videos to gallery
+
 ## 0.0.5
 
 * Fix for colliding permission request with image_picker plugin
