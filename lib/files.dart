@@ -14,7 +14,8 @@ const List<String> imageFormats = [
   '.jpg',
   '.gif',
   '.webp',
-  '.tif'
+  '.tif',
+  '.flv'
 ];
 const http = 'http';
 
