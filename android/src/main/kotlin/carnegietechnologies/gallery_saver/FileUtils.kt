@@ -85,55 +85,6 @@ internal object FileUtils {
     }
 
     /**
-     * @param contentResolver - content resolver
-     * @param path            - path to temp file that needs to be stored
-     * @return true if video was saved successfully
-     */
-    fun insertVideo(contentResolver: ContentResolver, path: String): Boolean {
-
-        val file = File(path)
-        val mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString())
-        val source = getBytesFromFile(file)
-
-        val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, file.name)
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
-        values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
-        // Add the date meta data to ensure the image is added at the front of the gallery
-        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
-        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-
-        var url: Uri? = null
-
-        try {
-            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-
-            if (source != null) {
-                var videoOutStream: OutputStream? = null
-                if (url != null) {
-                    videoOutStream = contentResolver.openOutputStream(url)
-                }
-
-                videoOutStream?.use {
-                    videoOutStream.write(source)
-                }
-            } else {
-                if (url != null) {
-                    contentResolver.delete(url, null, null)
-                }
-                url = null
-            }
-        } catch (e: Exception) {
-            if (url != null) {
-                contentResolver.delete(url, null, null)
-            }
-            return false
-        }
-
-        return true
-    }
-
-    /**
      * @param source -  array of bytes that will be rotated if it needs to be done
      * @param path   - path to image that needs to be checked for rotation
      * @return - array of bytes from rotated image, if rotation needs to be performed
@@ -248,5 +199,56 @@ internal object FileUtils {
         }
 
         return bytes
+    }
+
+    /**
+     * @param contentResolver - content resolver
+     * @param path            - path to temp file that needs to be stored
+     * @return true if video was saved successfully
+     */
+    fun insertVideo(contentResolver: ContentResolver, inputPath: String): Boolean {
+
+        val inputFile = File(inputPath)
+        var input: InputStream?
+        var out: OutputStream? = null
+
+        val mimeType = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
+
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, inputFile.name)
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, inputFile.name)
+        values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+
+        val url: Uri?
+
+        try {
+            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+            input = FileInputStream(inputFile)
+            if (url != null) {
+                out = contentResolver.openOutputStream(url)
+                val buffer = ByteArray(1024)
+                while (input?.read(buffer) != -1) {
+                    out.write(buffer)
+                }
+            }
+            input?.close()
+            // write the output file
+            out?.flush()
+            out?.close()
+
+            // delete the temp video file
+            inputFile.delete()
+
+        } catch (fnfE: FileNotFoundException) {
+            Log.e("GallerySaver", fnfE.message)
+            return false
+        } catch (e: Exception) {
+            Log.e("GallerySaver", e.message)
+            return false
+        }
+        return true
     }
 }
