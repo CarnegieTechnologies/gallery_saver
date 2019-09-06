@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Saving large video files - fix
+
 ## 1.0.1
 
 * Changed description

@@ -20,10 +20,11 @@ internal object FileUtils {
 
     private const val TAG = "FileUtils"
     private const val SCALE_FACTOR = 50.0
-
+    private const val BUFFER_SIZE = 1024 * 1024 * 8
     private const val DEGREES_90 = 90
     private const val DEGREES_180 = 180
     private const val DEGREES_270 = 270
+    private const val EOF = -1
 
     /**
      * Inserts image into external storage
@@ -206,11 +207,11 @@ internal object FileUtils {
      * @param path            - path to temp file that needs to be stored
      * @return true if video was saved successfully
      */
-    fun insertVideo(contentResolver: ContentResolver, inputPath: String): Boolean {
+    fun insertVideo(contentResolver: ContentResolver, inputPath: String, bufferSize: Int = BUFFER_SIZE): Boolean {
 
         val inputFile = File(inputPath)
-        var input: InputStream?
-        var out: OutputStream? = null
+        val inputStream: InputStream?
+        val outputStream: OutputStream?
 
         val mimeType = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
 
@@ -226,19 +227,18 @@ internal object FileUtils {
 
         try {
             url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-            input = FileInputStream(inputFile)
+            inputStream = FileInputStream(inputFile)
             if (url != null) {
-                out = contentResolver.openOutputStream(url)
-                val buffer = ByteArray(1024)
-                while (input?.read(buffer) != -1) {
-                    out.write(buffer)
+                outputStream = contentResolver.openOutputStream(url)
+                val buffer = ByteArray(bufferSize)
+                inputStream.use {
+                    outputStream?.use {
+                        while (inputStream.read(buffer) != EOF) {
+                            outputStream.write(buffer)
+                        }
+                    }
                 }
             }
-            input?.close()
-            // write the output file
-            out?.flush()
-            out?.close()
-
             // delete the temp video file
             inputFile.delete()
 
