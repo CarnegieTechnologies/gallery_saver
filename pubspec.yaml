@@ -1,6 +1,6 @@
 name: gallery_saver
 description: Saves images and videos from network or temporary file to external storage. Both images and videos will be visible in Android Gallery and iOS Photos.
-version: 1.0.1
+version: 1.0.2
 author: Carnegie Technologies d.o.o <devoffice@carnegietechnologies.com>
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 

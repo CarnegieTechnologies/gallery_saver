@@ -20,10 +20,11 @@ internal object FileUtils {
 
     private const val TAG = "FileUtils"
     private const val SCALE_FACTOR = 50.0
-
+    private const val BUFFER_SIZE = 1024 * 1024 * 8
     private const val DEGREES_90 = 90
     private const val DEGREES_180 = 180
     private const val DEGREES_270 = 270
+    private const val EOF = -1
 
     /**
      * Inserts image into external storage
@@ -78,55 +79,6 @@ internal object FileUtils {
             }
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
-            return false
-        }
-
-        return true
-    }
-
-    /**
-     * @param contentResolver - content resolver
-     * @param path            - path to temp file that needs to be stored
-     * @return true if video was saved successfully
-     */
-    fun insertVideo(contentResolver: ContentResolver, path: String): Boolean {
-
-        val file = File(path)
-        val mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString())
-        val source = getBytesFromFile(file)
-
-        val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, file.name)
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
-        values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
-        // Add the date meta data to ensure the image is added at the front of the gallery
-        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
-        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-
-        var url: Uri? = null
-
-        try {
-            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-
-            if (source != null) {
-                var videoOutStream: OutputStream? = null
-                if (url != null) {
-                    videoOutStream = contentResolver.openOutputStream(url)
-                }
-
-                videoOutStream?.use {
-                    videoOutStream.write(source)
-                }
-            } else {
-                if (url != null) {
-                    contentResolver.delete(url, null, null)
-                }
-                url = null
-            }
-        } catch (e: Exception) {
-            if (url != null) {
-                contentResolver.delete(url, null, null)
-            }
             return false
         }
 
@@ -248,5 +200,55 @@ internal object FileUtils {
         }
 
         return bytes
+    }
+
+    /**
+     * @param contentResolver - content resolver
+     * @param path            - path to temp file that needs to be stored
+     * @return true if video was saved successfully
+     */
+    fun insertVideo(contentResolver: ContentResolver, inputPath: String, bufferSize: Int = BUFFER_SIZE): Boolean {
+
+        val inputFile = File(inputPath)
+        val inputStream: InputStream?
+        val outputStream: OutputStream?
+
+        val mimeType = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
+
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, inputFile.name)
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, inputFile.name)
+        values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+
+        val url: Uri?
+
+        try {
+            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+            inputStream = FileInputStream(inputFile)
+            if (url != null) {
+                outputStream = contentResolver.openOutputStream(url)
+                val buffer = ByteArray(bufferSize)
+                inputStream.use {
+                    outputStream?.use {
+                        while (inputStream.read(buffer) != EOF) {
+                            outputStream.write(buffer)
+                        }
+                    }
+                }
+            }
+            // delete the temp video file
+            inputFile.delete()
+
+        } catch (fnfE: FileNotFoundException) {
+            Log.e("GallerySaver", fnfE.message)
+            return false
+        } catch (e: Exception) {
+            Log.e("GallerySaver", e.message)
+            return false
+        }
+        return true
     }
 }
