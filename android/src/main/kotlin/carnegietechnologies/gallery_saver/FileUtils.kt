@@ -69,7 +69,8 @@ internal object FileUtils {
 
                 val pathId = ContentUris.parseId(imageUri)
                 val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
-                        contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null)
+                    contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null
+                )
                 storeThumbnail(contentResolver, miniThumb, pathId)
             } else {
                 if (imageUri != null) {
@@ -106,8 +107,10 @@ internal object FileUtils {
         val bitmap = BitmapFactory.decodeByteArray(source, 0, source!!.size)
         val matrix = Matrix()
         matrix.preRotate(rotationInDegrees.toFloat())
-        val adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
-                bitmap.width, bitmap.height, matrix, true)
+        val adjustedBitmap = Bitmap.createBitmap(
+            bitmap, 0, 0,
+            bitmap.width, bitmap.height, matrix, true
+        )
         bitmap.recycle()
 
         val rotatedBytes = bitmapToArray(adjustedBitmap)
@@ -123,9 +126,10 @@ internal object FileUtils {
      * @param id              - path id
      */
     private fun storeThumbnail(
-            contentResolver: ContentResolver,
-            source: Bitmap,
-            id: Long) {
+        contentResolver: ContentResolver,
+        source: Bitmap,
+        id: Long
+    ) {
 
         val matrix = Matrix()
 
@@ -134,10 +138,11 @@ internal object FileUtils {
 
         matrix.setScale(scaleX, scaleY)
 
-        val thumb = Bitmap.createBitmap(source, 0, 0,
-                source.width,
-                source.height, matrix,
-                true
+        val thumb = Bitmap.createBitmap(
+            source, 0, 0,
+            source.width,
+            source.height, matrix,
+            true
         )
 
         val values = ContentValues()
@@ -147,7 +152,8 @@ internal object FileUtils {
         values.put(MediaStore.Images.Thumbnails.WIDTH, thumb.width)
 
         val thumbUri = contentResolver.insert(
-                MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values)
+            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values
+        )
 
         var outputStream: OutputStream? = null
         outputStream.use {
@@ -179,8 +185,10 @@ internal object FileUtils {
     @Throws(IOException::class)
     private fun getRotation(path: String): Int {
         val exif = ExifInterface(path)
-        return exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_NORMAL)
+        return exif.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
     }
 
     private fun bitmapToArray(bmp: Bitmap): ByteArray {
@@ -207,7 +215,11 @@ internal object FileUtils {
      * @param path            - path to temp file that needs to be stored
      * @return true if video was saved successfully
      */
-    fun insertVideo(contentResolver: ContentResolver, inputPath: String, bufferSize: Int = BUFFER_SIZE): Boolean {
+    fun insertVideo(
+        contentResolver: ContentResolver,
+        inputPath: String,
+        bufferSize: Int = BUFFER_SIZE
+    ): Boolean {
 
         val inputFile = File(inputPath)
         val inputStream: InputStream?
@@ -239,9 +251,6 @@ internal object FileUtils {
                     }
                 }
             }
-            // delete the temp video file
-            inputFile.delete()
-
         } catch (fnfE: FileNotFoundException) {
             Log.e("GallerySaver", fnfE.message)
             return false
