@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Remove deleting temp video after it gets saved into gallery
+
 ## 1.0.2
 
 * Saving large video files - fix
