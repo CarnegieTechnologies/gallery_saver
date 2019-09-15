@@ -36,7 +36,8 @@ internal object FileUtils {
     fun insertImage(contentResolver: ContentResolver, path: String): Boolean {
 
         val file = File(path)
-        val mimeType = MimeTypeMap.getFileExtensionFromUrl(file.toString())
+        val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
+        var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         var source = getBytesFromFile(file)
 
         val rotatedBytes = getRotatedBytesIfNecessary(source, path)
