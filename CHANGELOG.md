@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Fixed bug with mime type on Android 10
+
 ## 1.0.3
 
 * Remove deleting temp video after it gets saved into gallery
