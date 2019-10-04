@@ -6,8 +6,9 @@ import android.content.ContentValues
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
+import android.text.TextUtils
 import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.exifinterface.media.ExifInterface
@@ -31,13 +32,18 @@ internal object FileUtils {
      *
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
+     * @param folderName      - folder name for storing image
      * @return true if image was saved successfully
      */
-    fun insertImage(contentResolver: ContentResolver, path: String): Boolean {
+    fun insertImage(
+        contentResolver: ContentResolver,
+        path: String,
+        folderName: String?
+    ): Boolean {
 
         val file = File(path)
         val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
-        var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         var source = getBytesFromFile(file)
 
         val rotatedBytes = getRotatedBytesIfNecessary(source, path)
@@ -45,18 +51,20 @@ internal object FileUtils {
         if (rotatedBytes != null) {
             source = rotatedBytes
         }
+        val albumDir = File(getAlbumFolderPath(folderName, MediaType.image))
+        val imageFilePath = File(albumDir, file.name).absolutePath
 
         val values = ContentValues()
+        values.put(MediaStore.Images.ImageColumns.DATA, imageFilePath)
         values.put(MediaStore.Images.Media.TITLE, file.name)
         values.put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
 
-        var imageUri: Uri? = null
-
+        var imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         try {
-            imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            imageUri = contentResolver.insert(imageUri, values)
 
             if (source != null) {
                 var outputStream: OutputStream? = null
@@ -214,11 +222,13 @@ internal object FileUtils {
     /**
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
+     * @param folderName      - folder name for storing video
      * @return true if video was saved successfully
      */
     fun insertVideo(
         contentResolver: ContentResolver,
         inputPath: String,
+        folderName: String?,
         bufferSize: Int = BUFFER_SIZE
     ): Boolean {
 
@@ -228,18 +238,21 @@ internal object FileUtils {
 
         val mimeType = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
 
-        val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, inputFile.name)
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, inputFile.name)
-        values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
-        // Add the date meta data to ensure the image is added at the front of the gallery
-        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
-        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+        val albumDir = File(getAlbumFolderPath(folderName, MediaType.video))
+        val videoFilePath = File(albumDir, inputFile.name).absolutePath
 
-        val url: Uri?
+        val values = ContentValues()
+        values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
+        values.put(MediaStore.Video.Media.TITLE, inputFile.name)
+        values.put(MediaStore.Video.Media.DISPLAY_NAME, inputFile.name)
+        values.put(MediaStore.Video.Media.MIME_TYPE, mimeType)
+        // Add the date meta data to ensure the image is added at the front of the gallery
+        values.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis())
+        values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
+
 
         try {
-            url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+            val url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
             inputStream = FileInputStream(inputFile)
             if (url != null) {
                 outputStream = contentResolver.openOutputStream(url)
@@ -260,5 +273,34 @@ internal object FileUtils {
             return false
         }
         return true
+    }
+
+    private fun getAlbumFolderPath(folderName: String?, mediaType: MediaType): String {
+        var albumFolderPath: String = Environment.getExternalStorageDirectory().path
+        albumFolderPath = if (TextUtils.isEmpty(folderName)) {
+            val baseFolderName = if (mediaType == MediaType.image)
+                Environment.DIRECTORY_PICTURES else
+                Environment.DIRECTORY_MOVIES
+            createDirIfNotExist(
+                Environment.getExternalStoragePublicDirectory(baseFolderName).path
+            ) ?: albumFolderPath
+        } else {
+            createDirIfNotExist(albumFolderPath + File.separator + folderName)
+                ?: albumFolderPath
+        }
+        return albumFolderPath
+    }
+
+    private fun createDirIfNotExist(dirPath: String): String? {
+        val dir = File(dirPath)
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                return dir.path
+            } else {
+                return null
+            }
+        } else {
+            return dir.path
+        }
     }
 }

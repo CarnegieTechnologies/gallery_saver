@@ -9,14 +9,17 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.*
 
+enum class MediaType { image, video }
 /**
  * Class holding implementation of saving images and videos
  */
-class GallerySaver internal constructor(private val activity: Activity) : PluginRegistry.RequestPermissionsResultListener {
+class GallerySaver internal constructor(private val activity: Activity) :
+    PluginRegistry.RequestPermissionsResultListener {
 
     private var pendingResult: MethodChannel.Result? = null
-    private var methodCall: MethodCall? = null
-    private var isImage: Boolean = false
+    private var mediaType: MediaType? = null
+    private var filePath: String = ""
+    private var albumName: String = ""
 
     private val job = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main + job)
@@ -26,109 +29,68 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
      *
      * @param methodCall - method call
      * @param result     - result to be set when saving operation finishes
-     * @param isImage    - tells if image or video should be saved
+     * @param mediaType    - media type
      */
-    internal fun saveFile(methodCall: MethodCall, result: MethodChannel.Result, isImage: Boolean) {
-        if (!setPendingMethodCallAndResult(methodCall, result)) {
-            finishWithError()
-            return
-        }
+    internal fun checkPermissionAndSaveFile(
+        methodCall: MethodCall,
+        result: MethodChannel.Result,
+        mediaType: MediaType
+    ) {
+        filePath = methodCall.argument<Any>(KEY_PATH)?.toString() ?: ""
+        albumName = methodCall.argument<Any>(KEY_ALBUM_NAME)?.toString() ?: ""
+        this.mediaType = mediaType
+        this.pendingResult = result
 
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION)
-            this.methodCall = methodCall
-            this.pendingResult = result
-            this.isImage = isImage
-            return
-        }
-        if (isImage) {
-            saveImage(methodCall)
+        if (isWritePermissionGranted()) {
+            saveMediaFile()
         } else {
-            saveVideo(methodCall)
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION
+            )
+
         }
     }
 
-    /**
-     * Saves video with provided name and description to device
-     *
-     * @param methodCall - method call
-     */
-    private fun saveVideo(methodCall: MethodCall) {
-        val tempPath = if (methodCall.argument<Any>(KEY_PATH) == null)
-            ""
-        else
-            methodCall.argument<Any>(KEY_PATH)!!.toString()
+    private fun isWritePermissionGranted(): Boolean {
+        return PackageManager.PERMISSION_GRANTED ==
+                ActivityCompat.checkSelfPermission(
+                    activity, Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+    }
 
+    private fun saveMediaFile() {
         uiScope.launch {
             val success = async(Dispatchers.IO) {
-                FileUtils.insertVideo(activity.contentResolver, tempPath)
+                if (mediaType == MediaType.video) {
+                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
+                } else {
+                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
+                }
             }
             success.await()
             finishWithSuccess()
         }
-    }
-
-
-    /**
-     * Saves image with provided image and description to device
-     *
-     * @param methodCall - method call
-     */
-    private fun saveImage(methodCall: MethodCall) {
-        val tempPath = if (methodCall.argument<Any>(KEY_PATH) == null)
-            ""
-        else
-            methodCall.argument<Any>(KEY_PATH).toString()
-
-        uiScope.launch {
-            val success = async(Dispatchers.IO) {
-                FileUtils.insertImage(activity.contentResolver, tempPath)
-            }
-            success.await()
-            finishWithSuccess()
-        }
-    }
-
-    private fun setPendingMethodCallAndResult(
-            methodCall: MethodCall, result: MethodChannel.Result): Boolean {
-        if (pendingResult != null) {
-            return false
-        }
-
-        this.methodCall = methodCall
-        pendingResult = result
-        return true
-    }
-
-    private fun finishWithError() {
-        pendingResult!!.success(false)
-        clearMethodCallAndResult()
     }
 
     private fun finishWithSuccess() {
         pendingResult!!.success(true)
-        clearMethodCallAndResult()
-    }
-
-    private fun clearMethodCallAndResult() {
-        methodCall = null
         pendingResult = null
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ): Boolean {
         val permissionGranted = grantResults.isNotEmpty()
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED
 
         if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
             if (permissionGranted) {
-                if (isImage) {
-                    saveImage(methodCall!!)
+                if (mediaType == MediaType.video) {
+                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
                 } else {
-                    saveVideo(methodCall!!)
+                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
                 }
             }
         } else {
@@ -142,5 +104,6 @@ class GallerySaver internal constructor(private val activity: Activity) : Plugin
         private const val REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2408
 
         private const val KEY_PATH = "path"
+        private const val KEY_ALBUM_NAME = "albumName"
     }
 }
