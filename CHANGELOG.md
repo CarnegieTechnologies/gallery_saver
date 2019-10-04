@@ -1,3 +1,7 @@
+## 1.0.5
+
+* Support saving images in separate folder in gallery
+
 ## 1.0.4
 
 * Fixed bug with mime type on Android 10
