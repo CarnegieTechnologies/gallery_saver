@@ -1,3 +1,14 @@
+## 1.0.5
+
+* Support saving images in separate folder in gallery
+* Android:
+* By default image will be saved at "pictures" system folder,
+* and video at "movies" system folder.If user set folder name it will be
+* at root external storage.
+* iOS:
+* By default image and video will be saved at photos.
+* If user set folder name it will be added as new album at photos.
+
 ## 1.0.4
 
 * Fixed bug with mime type on Android 10

@@ -24,8 +24,8 @@ class GallerySaverPlugin private constructor(
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
-            "saveImage" -> gallerySaver.saveFile(call, result, true)
-            "saveVideo" -> gallerySaver.saveFile(call, result, false)
+            "saveImage" -> gallerySaver.checkPermissionAndSaveFile(call, result, MediaType.image)
+            "saveVideo" -> gallerySaver.checkPermissionAndSaveFile(call, result, MediaType.video)
             else -> result.notImplemented()
         }
     }
