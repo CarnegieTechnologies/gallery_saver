@@ -1,3 +1,7 @@
+## 1.0.6
+
+* Ios save image to photos crash fix.
+
 ## 1.0.5
 
 * Support saving images in separate folder in gallery

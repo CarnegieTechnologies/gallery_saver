@@ -39,7 +39,7 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
     func saveMedia(_ call: FlutterMethodCall, _ mediaType: MediaType, _ result: @escaping FlutterResult) {
         let args = call.arguments as? Dictionary<String, Any>
         let path = args![self.path] as! String
-        let albumName = args![self.albumName] as! String
+        let albumName = args![self.albumName] as? String
         
         let status = PHPhotoLibrary.authorizationStatus()
         if status == .notDetermined {
