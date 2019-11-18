@@ -1,3 +1,7 @@
+## 1.0.7 
+
+* Fixed issue with improper mime types for video
+
 ## 1.0.6
 
 * Ios save image to photos crash fix.
