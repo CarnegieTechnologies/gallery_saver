@@ -236,7 +236,8 @@ internal object FileUtils {
         val inputStream: InputStream?
         val outputStream: OutputStream?
 
-        val mimeType = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
+        val extension = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
+        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
 
         val albumDir = File(getAlbumFolderPath(folderName, MediaType.video))
         val videoFilePath = File(albumDir, inputFile.name).absolutePath
