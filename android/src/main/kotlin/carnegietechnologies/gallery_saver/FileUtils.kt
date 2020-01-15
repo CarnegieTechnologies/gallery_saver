@@ -76,11 +76,13 @@ internal object FileUtils {
                     outputStream.write(source)
                 }
 
-                val pathId = ContentUris.parseId(imageUri)
-                val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
-                    contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null
-                )
-                storeThumbnail(contentResolver, miniThumb, pathId)
+                if (imageUri != null) {
+                    val pathId = ContentUris.parseId(imageUri)
+                    val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
+                            contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null
+                    )
+                    storeThumbnail(contentResolver, miniThumb, pathId)
+                }
             } else {
                 if (imageUri != null) {
                     contentResolver.delete(imageUri, null, null)
