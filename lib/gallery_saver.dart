@@ -46,7 +46,7 @@ class GallerySaver {
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
     }
-    if (!isImage(path)) {
+    if (!await _checkIfFileIsImage(path)) {
       throw ArgumentError(fileIsNotImage);
     }
     if (!isLocalFilePath(path)) {
@@ -63,6 +63,10 @@ class GallerySaver {
     }
 
     return result;
+  }
+
+  static Future<bool> _checkIfFileIsImage(String path) async {
+    return _channel.invokeMethod<bool>('image.check', path);
   }
 
   static Future<File> _downloadFile(String url) async {
