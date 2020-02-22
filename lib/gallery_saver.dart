@@ -30,7 +30,7 @@ class GallerySaver {
       tempFile = await _downloadFile(path);
       path = tempFile.path;
     }
-    bool result = await _channel.invokeMethod(
+    Map<String, dynamic> result = await _channel.invokeMethod(
       methodSaveVideo,
       <String, dynamic>{'path': path, 'albumName': albumName},
     );
