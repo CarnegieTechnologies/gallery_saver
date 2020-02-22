@@ -3,9 +3,13 @@ package carnegietechnologies.gallery_saver
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
@@ -39,7 +43,7 @@ internal object FileUtils {
         contentResolver: ContentResolver,
         path: String,
         folderName: String?
-    ): Boolean {
+    ): Map<String, Any> {
 
         val file = File(path)
         val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
@@ -61,6 +65,8 @@ internal object FileUtils {
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+
+        var response = mutableMapOf<String, Any>();
 
         var imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         try {
@@ -89,10 +95,15 @@ internal object FileUtils {
             }
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
-            return false
+            response["status"] = false
+
+            return response
         }
 
-        return true
+        response["status"] = true;
+        response["localIdentifier"] = imageFilePath;
+
+        return response
     }
 
     /**
@@ -230,7 +241,7 @@ internal object FileUtils {
         inputPath: String,
         folderName: String?,
         bufferSize: Int = BUFFER_SIZE
-    ): Boolean {
+    ): Map<String, Any> {
 
         val inputFile = File(inputPath)
         val inputStream: InputStream?
@@ -251,9 +262,11 @@ internal object FileUtils {
         values.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis())
         values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
 
+        var response = mutableMapOf<String, Any>();
+
+        val url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
 
         try {
-            val url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
             inputStream = FileInputStream(inputFile)
             if (url != null) {
                 outputStream = contentResolver.openOutputStream(url)
@@ -268,12 +281,18 @@ internal object FileUtils {
             }
         } catch (fnfE: FileNotFoundException) {
             Log.e("GallerySaver", fnfE.message)
-            return false
+            response["status"] = false
+            return response
         } catch (e: Exception) {
             Log.e("GallerySaver", e.message)
-            return false
+            response["status"] = false
+            return response
         }
-        return true
+
+        response["status"] = true
+        response["localIdentifier"] = videoFilePath;
+
+        return response
     }
 
     private fun getAlbumFolderPath(folderName: String?, mediaType: MediaType): String {
@@ -303,5 +322,74 @@ internal object FileUtils {
         } else {
             return dir.path
         }
+    }
+
+    fun convertUriToPath(context: Context, uri: Uri?): String? {
+        if (uri == null)
+            return null
+        val schema = uri!!.getScheme()
+        if (TextUtils.isEmpty(schema) || ContentResolver.SCHEME_FILE == schema) {
+            return uri!!.getPath()
+        }
+        if ("http" == schema)
+            return uri!!.toString()
+        if (ContentResolver.SCHEME_CONTENT == schema) {
+            val projection = arrayOf(MediaStore.MediaColumns.DATA)
+            var cursor: Cursor? = null
+            var filePath = ""
+            try {
+                cursor = context.getContentResolver().query(uri, projection, null, null, null)
+                if (cursor != null) {
+                    if (cursor!!.moveToFirst()) {
+                        filePath = cursor!!.getString(0)
+                    }
+
+                    cursor!!.close()
+                }
+            } catch (e: Exception) {
+                // do nothing
+            } finally {
+                try {
+                    if (null != cursor) {
+                        cursor!!.close()
+                    }
+                } catch (e2: Exception) {
+                    // do nothing
+                }
+
+            }
+            if (TextUtils.isEmpty(filePath)) {
+                try {
+                    val contentResolver = context.getContentResolver()
+                    val selection = MediaStore.Images.Media._ID + "= ?"
+                    var id = uri!!.getLastPathSegment()
+                    if (Build.VERSION.SDK_INT >= 19 && !TextUtils.isEmpty(id) && id.contains(":")) {
+                        id = id.split(":".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[1]
+                    }
+                    val selectionArgs = arrayOf<String>(id)
+                    cursor = contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, selection, selectionArgs, null)
+                    if (cursor!!.moveToFirst()) {
+                        filePath = cursor!!.getString(0)
+                    }
+                    if (null != cursor) {
+                        cursor!!.close()
+                    }
+
+                } catch (e: Exception) {
+                    // do nothing
+                } finally {
+                    try {
+                        if (cursor != null) {
+                            cursor!!.close()
+                        }
+                    } catch (e: Exception) {
+                        // do nothing
+                    }
+
+                }
+            }
+            return filePath
+        }
+        return null
     }
 }

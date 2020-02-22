@@ -1,5 +1,6 @@
 package carnegietechnologies.gallery_saver
 
+import android.content.Context
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -10,8 +11,12 @@ class GallerySaverPlugin private constructor(
         private val gallerySaver: GallerySaver) : MethodCallHandler {
 
     companion object {
+        lateinit var context: Context;
+
         @JvmStatic
         fun registerWith(registrar: Registrar) {
+            context = registrar.context();
+
             val channel = MethodChannel(registrar.messenger(),
                     "gallery_saver")
             val gallerySaver = GallerySaver(registrar.activity())

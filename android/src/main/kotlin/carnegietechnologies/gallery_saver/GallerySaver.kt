@@ -62,20 +62,22 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
     private fun saveMediaFile() {
         uiScope.launch {
+            var response: Map<String, Any>? = null;
+
             val success = async(Dispatchers.IO) {
                 if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
+                    response = FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
                 } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
+                    response = FileUtils.insertImage(activity.contentResolver, filePath, albumName)
                 }
             }
             success.await()
-            finishWithSuccess()
+            finishWithSuccess(response)
         }
     }
 
-    private fun finishWithSuccess() {
-        pendingResult!!.success(true)
+    private fun finishWithSuccess(response: Map<String, Any>?) {
+        pendingResult!!.success(response)
         pendingResult = null
     }
 
@@ -88,9 +90,9 @@ class GallerySaver internal constructor(private val activity: Activity) :
         if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
             if (permissionGranted) {
                 if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
+                    val response = FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
                 } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
+                    val response = FileUtils.insertImage(activity.contentResolver, filePath, albumName)
                 }
             }
         } else {
