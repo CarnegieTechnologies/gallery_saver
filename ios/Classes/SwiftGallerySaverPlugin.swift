@@ -22,9 +22,25 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             self.saveMedia(call, .image, result)
         } else if call.method == "saveVideo" {
             self.saveMedia(call, .video, result)
+        } else if call.method == "image.check" {
+            checkImage(call, result)
         } else {
             result(FlutterMethodNotImplemented)
         }
+    }
+    
+    /// Attempts to read the size of a image specified as the single argument to the `call`.
+    /// 
+    /// - Parameters:
+    ///   - call: method object with params for saving media
+    ///   - result: flutter result that gets sent back to the dart code
+    ///
+    func checkImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let path = call.arguments as! String
+        let url = URL(fileURLWithPath: path)
+        let size = SwiftGallerySaverPlugin.sizeOfImageAt(url: url)
+        
+        result(size != nil)
     }
     
     /// Tries to save image to the photos app.
@@ -120,6 +136,25 @@ public class SwiftGallerySaverPlugin: NSObject, FlutterPlugin {
             DispatchQueue.main.async {
                 completion(error)
             }
+        }
+    }
+    
+    private static func sizeOfImageAt(url: URL) -> CGSize? {
+        // with CGImageSource we avoid loading the whole image into memory
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+            return nil
+        }
+
+        let propertiesOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, propertiesOptions) as? [CFString: Any] else {
+            return nil
+        }
+
+        if let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+            let height = properties[kCGImagePropertyPixelHeight] as? CGFloat {
+            return CGSize(width: width, height: height)
+        } else {
+            return nil
         }
     }
 }

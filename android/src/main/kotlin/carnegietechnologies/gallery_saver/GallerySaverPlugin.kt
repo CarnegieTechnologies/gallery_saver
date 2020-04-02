@@ -26,6 +26,12 @@ class GallerySaverPlugin private constructor(
         when (call.method) {
             "saveImage" -> gallerySaver.checkPermissionAndSaveFile(call, result, MediaType.image)
             "saveVideo" -> gallerySaver.checkPermissionAndSaveFile(call, result, MediaType.video)
+            "image.check" -> {
+                val path = call.arguments<String>()
+                val isImage = gallerySaver.isImage(path)
+
+                result.success(isImage)
+            }
             else -> result.notImplemented()
         }
     }

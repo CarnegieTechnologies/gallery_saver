@@ -9,15 +9,7 @@ const List<String> videoFormats = [
   '.mkv',
   '.flv'
 ];
-const List<String> imageFormats = [
-  '.jpeg',
-  '.png',
-  '.jpg',
-  '.gif',
-  '.webp',
-  '.tif',
-  '.heic'
-];
+
 const http = 'http';
 
 bool isLocalFilePath(String path) {
@@ -27,6 +19,3 @@ bool isLocalFilePath(String path) {
 
 bool isVideo(String path) =>
     videoFormats.contains(extension(path).toLowerCase());
-
-bool isImage(String path) =>
-    imageFormats.contains(extension(path).toLowerCase());
