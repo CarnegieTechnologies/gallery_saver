@@ -1,3 +1,7 @@
+## 2.0.0 
+
+* Merged all PRs(image validation to native, error if image was selected twice, newest android and ios support)
+
 ## 1.0.7 
 
 * Fixed issue with improper mime types for video
