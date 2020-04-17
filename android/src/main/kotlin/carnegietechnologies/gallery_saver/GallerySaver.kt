@@ -77,7 +77,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
     }
 
     private fun finishWithSuccess(response: Map<String, Any>?) {
-        pendingResult!!.success(response)
+        pendingResult?.success(response)
         pendingResult = null
     }
 

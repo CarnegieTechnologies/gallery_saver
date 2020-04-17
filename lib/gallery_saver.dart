@@ -30,14 +30,14 @@ class GallerySaver {
       tempFile = await _downloadFile(path);
       path = tempFile.path;
     }
-    Map<String, dynamic> result = await _channel.invokeMethod(
+    final result = await _channel.invokeMethod(
       methodSaveVideo,
       <String, dynamic>{'path': path, 'albumName': albumName},
     );
     if (tempFile != null) {
       tempFile.delete();
     }
-    return result;
+    return Map<String, dynamic>.from(result);
   }
 
   ///saves image from provided temp path and optional album name in gallery
@@ -54,7 +54,7 @@ class GallerySaver {
       path = tempFile.path;
     }
 
-    Map<String, dynamic> result = await _channel.invokeMethod(
+    final result = await _channel.invokeMethod(
       methodSaveImage,
       <String, dynamic>{'path': path, 'albumName': albumName},
     );
@@ -62,7 +62,7 @@ class GallerySaver {
       tempFile.delete();
     }
 
-    return result;
+    return Map<String, dynamic>.from(result);
   }
 
   static Future<File> _downloadFile(String url) async {
