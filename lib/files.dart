@@ -25,8 +25,18 @@ bool isLocalFilePath(String path) {
   return !uri.scheme.contains(http);
 }
 
-bool isVideo(String path) =>
-    videoFormats.contains(extension(path).toLowerCase());
+bool isVideo(String path) {
+  bool output = false;
+  videoFormats.forEach((videoFormat) {
+    if (path.toLowerCase().contains(videoFormat)) output = true;
+  });
+  return output;
+}
 
-bool isImage(String path) =>
-    imageFormats.contains(extension(path).toLowerCase());
+bool isImage(String path) {
+  bool output = false;
+  imageFormats.forEach((imageFormat) {
+    if (path.toLowerCase().contains(imageFormat)) output = true;
+  });
+  return output;
+}
