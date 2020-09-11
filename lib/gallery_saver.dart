@@ -68,10 +68,12 @@ class GallerySaver {
   static Future<File> _downloadFile(String url) async {
     print(url);
     http.Client _client = new http.Client();
-    var req = await _client.get(Uri.parse(url));
+    var fileUri = Uri.parse(url);
+    var req = await _client.get(fileUri);
+    var fileName = fileUri.pathSegments.last;
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
-    File file = new File('$dir/${basename(url)}');
+    File file = new File('$dir/$fileName');
     await file.writeAsBytes(bytes);
     print('File size:${await file.length()}');
     print(file.path);
