@@ -71,6 +71,9 @@ class GallerySaver {
     var fileUri = Uri.parse(url);
     var req = await _client.get(fileUri);
     var fileName = fileUri.pathSegments.last;
+    while (Uri.parse(fileName).pathSegments.length > 1) {
+      fileName = Uri.parse(fileName).pathSegments.last;
+    }
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
     File file = new File('$dir/$fileName');
