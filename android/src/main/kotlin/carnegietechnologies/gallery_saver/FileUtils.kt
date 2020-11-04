@@ -36,9 +36,9 @@ internal object FileUtils {
      * @return true if image was saved successfully
      */
     fun insertImage(
-        contentResolver: ContentResolver,
-        path: String,
-        folderName: String?
+            contentResolver: ContentResolver,
+            path: String,
+            folderName: String?
     ): Boolean {
 
         val file = File(path)
@@ -119,8 +119,8 @@ internal object FileUtils {
         val matrix = Matrix()
         matrix.preRotate(rotationInDegrees.toFloat())
         val adjustedBitmap = Bitmap.createBitmap(
-            bitmap, 0, 0,
-            bitmap.width, bitmap.height, matrix, true
+                bitmap, 0, 0,
+                bitmap.width, bitmap.height, matrix, true
         )
         bitmap.recycle()
 
@@ -137,9 +137,9 @@ internal object FileUtils {
      * @param id              - path id
      */
     private fun storeThumbnail(
-        contentResolver: ContentResolver,
-        source: Bitmap,
-        id: Long
+            contentResolver: ContentResolver,
+            source: Bitmap,
+            id: Long
     ) {
 
         val matrix = Matrix()
@@ -150,10 +150,10 @@ internal object FileUtils {
         matrix.setScale(scaleX, scaleY)
 
         val thumb = Bitmap.createBitmap(
-            source, 0, 0,
-            source.width,
-            source.height, matrix,
-            true
+                source, 0, 0,
+                source.width,
+                source.height, matrix,
+                true
         )
 
         val values = ContentValues()
@@ -163,7 +163,7 @@ internal object FileUtils {
         values.put(MediaStore.Images.Thumbnails.WIDTH, thumb.width)
 
         val thumbUri = contentResolver.insert(
-            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values
+                MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, values
         )
 
         var outputStream: OutputStream? = null
@@ -197,8 +197,8 @@ internal object FileUtils {
     private fun getRotation(path: String): Int {
         val exif = ExifInterface(path)
         return exif.getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_NORMAL
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
         )
     }
 
@@ -228,10 +228,10 @@ internal object FileUtils {
      * @return true if video was saved successfully
      */
     fun insertVideo(
-        contentResolver: ContentResolver,
-        inputPath: String,
-        folderName: String?,
-        bufferSize: Int = BUFFER_SIZE
+            contentResolver: ContentResolver,
+            inputPath: String,
+            folderName: String?,
+            bufferSize: Int = BUFFER_SIZE
     ): Boolean {
 
         val inputFile = File(inputPath)
@@ -262,8 +262,10 @@ internal object FileUtils {
                 val buffer = ByteArray(bufferSize)
                 inputStream.use {
                     outputStream?.use {
-                        while (inputStream.read(buffer) != EOF) {
-                            outputStream.write(buffer)
+                        var len = inputStream.read(buffer)
+                        while (len != EOF) {
+                            outputStream.write(buffer, 0, len)
+                            len = inputStream.read(buffer)
                         }
                     }
                 }
@@ -285,11 +287,11 @@ internal object FileUtils {
                 Environment.DIRECTORY_PICTURES else
                 Environment.DIRECTORY_MOVIES
             createDirIfNotExist(
-                Environment.getExternalStoragePublicDirectory(baseFolderName).path
+                    Environment.getExternalStoragePublicDirectory(baseFolderName).path
             ) ?: albumFolderPath
         } else {
             createDirIfNotExist(albumFolderPath + File.separator + folderName)
-                ?: albumFolderPath
+                    ?: albumFolderPath
         }
         return albumFolderPath
     }
