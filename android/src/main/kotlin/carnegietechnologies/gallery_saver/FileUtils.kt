@@ -81,7 +81,7 @@ internal object FileUtils {
                     val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
                             contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null
                     )
-                    storeThumbnail(contentResolver, miniThumb, pathId)
+                    // storeThumbnail(contentResolver, miniThumb, pathId)
                 }
             } else {
                 if (imageUri != null) {
