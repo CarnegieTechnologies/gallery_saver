@@ -167,10 +167,13 @@ internal object FileUtils {
         )
 
         var outputStream: OutputStream? = null
+        try{
         outputStream.use {
             if (thumbUri != null) {
                 outputStream = contentResolver.openOutputStream(thumbUri)
             }
+        }}catch (e: Exception){
+        //avoid crashing on devices that do not support thumb
         }
     }
 
