@@ -92,6 +92,8 @@ internal object FileUtils {
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
             return false
+        } catch (t: Throwable) {
+            return false
         }
 
         return true
