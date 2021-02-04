@@ -274,10 +274,10 @@ internal object FileUtils {
                 }
             }
         } catch (fnfE: FileNotFoundException) {
-            Log.e("GallerySaver", fnfE.message)
+            Log.e("GallerySaver", fnfE.message ?: "Unknown File Not Found error")
             return false
         } catch (e: Exception) {
-            Log.e("GallerySaver", e.message)
+            Log.e("GallerySaver", e.message ?: "Unknown error")
             return false
         }
         return true
