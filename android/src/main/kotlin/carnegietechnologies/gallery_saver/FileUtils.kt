@@ -235,7 +235,7 @@ internal object FileUtils {
     fun insertVideo(
         contentResolver: ContentResolver,
         inputPath: String,
-        folderName: String?,
+        folderName: String,
         bufferSize: Int = BUFFER_SIZE
     ): Boolean {
 
@@ -274,10 +274,10 @@ internal object FileUtils {
                 }
             }
         } catch (fnfE: FileNotFoundException) {
-            Log.e("GallerySaver", fnfE.message)
+            Log.e("GallerySaver", fnfE.message?:"")
             return false
         } catch (e: Exception) {
-            Log.e("GallerySaver", e.message)
+            Log.e("GallerySaver", e.message?:"")
             return false
         }
         return true
