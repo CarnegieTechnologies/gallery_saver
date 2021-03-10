@@ -12,6 +12,14 @@ class GallerySaverPlugin private constructor(
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
+            if (registrar.activity() == null) {
+                // If a background flutter view tries to register the plugin,
+                // there will be no activity from the registrar,
+                // we stop the registering process immediately
+                // because the GallerySaver requires an activity.
+                return
+            }
+
             val channel = MethodChannel(registrar.messenger(),
                     "gallery_saver")
             val gallerySaver = GallerySaver(registrar.activity())

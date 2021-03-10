@@ -1,3 +1,7 @@
+## 2.0.3+1
+
+* Fixed: Exception while register in background mode.
+
 ## 2.0.3
 
 * Android - Invalid column 
