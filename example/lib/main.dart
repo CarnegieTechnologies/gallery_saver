@@ -37,8 +37,10 @@ class _MyAppState extends State<MyApp> {
                 flex: 1,
                 child: Container(
                   child: SizedBox.expand(
-                    child: RaisedButton(
-                      color: Colors.blue,
+                    child: TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.blue),
+                      ),
                       onPressed: _takePhoto,
                       child: Text(firstButtonText,
                           style: TextStyle(
@@ -51,8 +53,10 @@ class _MyAppState extends State<MyApp> {
               Flexible(
                 child: Container(
                     child: SizedBox.expand(
-                  child: RaisedButton(
-                    color: Colors.white,
+                  child: TextButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.white),
+                    ),
                     onPressed: _recordVideo,
                     child: Text(secondButtonText,
                         style: TextStyle(
@@ -69,8 +73,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _takePhoto() async {
-    ImagePicker.pickImage(source: ImageSource.camera)
-        .then((File recordedImage) {
+    ImagePicker().getImage(source: ImageSource.camera)
+        .then((PickedFile recordedImage) {
       if (recordedImage != null && recordedImage.path != null) {
         setState(() {
           firstButtonText = 'saving in progress...';
@@ -86,8 +90,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _recordVideo() async {
-    ImagePicker.pickVideo(source: ImageSource.camera)
-        .then((File recordedVideo) {
+    ImagePicker().getVideo(source: ImageSource.camera)
+        .then((PickedFile recordedVideo) {
       if (recordedVideo != null && recordedVideo.path != null) {
         setState(() {
           secondButtonText = 'saving in progress...';
@@ -142,8 +146,10 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
         key: _globalKey,
         child: Container(
           child: SizedBox.expand(
-            child: RaisedButton(
-              color: Colors.pink,
+            child: TextButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.pink),
+              ),
               onPressed: _saveScreenshot,
               child: Text(screenshotButtonText,
                   style: TextStyle(fontSize: textSize, color: Colors.white)),
