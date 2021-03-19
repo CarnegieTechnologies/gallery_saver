@@ -69,8 +69,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _takePhoto() async {
-    ImagePicker.pickImage(source: ImageSource.camera)
-        .then((File recordedImage) {
+    ImagePicker.platform
+        .pickImage(source: ImageSource.camera)
+        .then((PickedFile? recordedImage) {
       if (recordedImage != null && recordedImage.path != null) {
         setState(() {
           firstButtonText = 'saving in progress...';
@@ -86,8 +87,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _recordVideo() async {
-    ImagePicker.pickVideo(source: ImageSource.camera)
-        .then((File recordedVideo) {
+    ImagePicker.platform
+        .pickVideo(source: ImageSource.camera)
+        .then((PickedFile? recordedVideo) {
       if (recordedVideo != null && recordedVideo.path != null) {
         setState(() {
           secondButtonText = 'saving in progress...';
@@ -102,7 +104,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // ignore: unused_element
   void _saveNetworkVideo() async {
     String path =
         'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
@@ -113,7 +114,6 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // ignore: unused_element
   void _saveNetworkImage() async {
     String path =
         'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
@@ -160,12 +160,12 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
     });
     try {
       //extract bytes
-      final RenderRepaintBoundary boundary =
-          _globalKey.currentContext.findRenderObject();
+      final RenderRepaintBoundary boundary = _globalKey.currentContext!
+          .findRenderObject()! as RenderRepaintBoundary;
       final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData byteData =
+      final ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
-      final Uint8List pngBytes = byteData.buffer.asUint8List();
+      final Uint8List pngBytes = byteData!.buffer.asUint8List();
 
       //create file
       final String dir = (await getApplicationDocumentsDirectory()).path;
@@ -174,11 +174,10 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
       await capturedFile.writeAsBytes(pngBytes);
       print(capturedFile.path);
 
-      await GallerySaver.saveImage(capturedFile.path)
-          .then((value) {
-            setState(() {
-              screenshotButtonText = 'screenshot saved!';
-            });
+      await GallerySaver.saveImage(capturedFile.path).then((value) {
+        setState(() {
+          screenshotButtonText = 'screenshot saved!';
+        });
       });
     } catch (e) {
       print(e);

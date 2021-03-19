@@ -18,8 +18,8 @@ class GallerySaver {
   static const MethodChannel _channel = const MethodChannel(channelName);
 
   ///saves video from provided temp path and optional album name in gallery
-  static Future<bool> saveVideo(String path, {String albumName}) async {
-    File tempFile;
+  static Future<bool> saveVideo(String? path, {String? albumName}) async {
+    File? tempFile;
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
     }
@@ -41,8 +41,8 @@ class GallerySaver {
   }
 
   ///saves image from provided temp path and optional album name in gallery
-  static Future<bool> saveImage(String path, {String albumName}) async {
-    File tempFile;
+  static Future<bool> saveImage(String? path, {String? albumName}) async {
+    File? tempFile;
     if (path == null || path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
     }

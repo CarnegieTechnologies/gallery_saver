@@ -1,3 +1,7 @@
+## 3.0.0-nullsafety.0
+
+* Nullsafety added
+
 ## 2.0.3
 
 * Android - Invalid column 
