@@ -83,13 +83,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _takePhoto() async {
-    ImagePicker.pickImage(source: ImageSource.camera)
-        .then((File recordedImage) {
+    ImagePicker.platform
+        .pickImage(source: ImageSource.camera)
+        .then((PickedFile? recordedImage) {
       if (recordedImage != null && recordedImage.path != null) {
         setState(() {
           firstButtonText = 'saving in progress...';
         });
-        GallerySaver.saveImage(recordedImage.path).then((String path) {
+        GallerySaver.saveImage(recordedImage.path).then((bool success) {
           setState(() {
             firstButtonText = 'image saved!';
           });
@@ -99,13 +100,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _recordVideo() async {
-    ImagePicker.pickVideo(source: ImageSource.camera)
-        .then((File recordedVideo) {
+    ImagePicker.platform
+        .pickVideo(source: ImageSource.camera)
+        .then((PickedFile? recordedVideo) {
       if (recordedVideo != null && recordedVideo.path != null) {
         setState(() {
           secondButtonText = 'saving in progress...';
         });
-        GallerySaver.saveVideo(recordedVideo.path).then((String path) {
+        GallerySaver.saveVideo(recordedVideo.path).then((bool success) {
           setState(() {
             secondButtonText = 'video saved!';
           });
