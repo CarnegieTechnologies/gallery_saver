@@ -1,3 +1,7 @@
+## 3.0.0-nullsafety.1
+
+* Nullsafety bug fixed
+
 ## 3.0.0-nullsafety.0
 
 * Nullsafety added

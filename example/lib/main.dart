@@ -72,12 +72,12 @@ class _MyAppState extends State<MyApp> {
     ImagePicker.platform
         .pickImage(source: ImageSource.camera)
         .then((PickedFile? recordedImage) {
-      if (recordedImage != null && recordedImage.path != null) {
+      if (recordedImage != null) {
         setState(() {
           firstButtonText = 'saving in progress...';
         });
         GallerySaver.saveImage(recordedImage.path, albumName: albumName)
-            .then((bool success) {
+            .then((bool? success) {
           setState(() {
             firstButtonText = 'image saved!';
           });
@@ -90,12 +90,12 @@ class _MyAppState extends State<MyApp> {
     ImagePicker.platform
         .pickVideo(source: ImageSource.camera)
         .then((PickedFile? recordedVideo) {
-      if (recordedVideo != null && recordedVideo.path != null) {
+      if (recordedVideo != null) {
         setState(() {
           secondButtonText = 'saving in progress...';
         });
         GallerySaver.saveVideo(recordedVideo.path, albumName: albumName)
-            .then((bool success) {
+            .then((bool? success) {
           setState(() {
             secondButtonText = 'video saved!';
           });
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
   void _saveNetworkVideo() async {
     String path =
         'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
-    GallerySaver.saveVideo(path, albumName: albumName).then((bool success) {
+    GallerySaver.saveVideo(path, albumName: albumName).then((bool? success) {
       setState(() {
         print('Video is saved');
       });
@@ -119,7 +119,7 @@ class _MyAppState extends State<MyApp> {
   void _saveNetworkImage() async {
     String path =
         'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
-    GallerySaver.saveImage(path, albumName: albumName).then((bool success) {
+    GallerySaver.saveImage(path, albumName: albumName).then((bool? success) {
       setState(() {
         print('Image is saved');
       });
@@ -164,6 +164,13 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
       //extract bytes
       final RenderRepaintBoundary boundary = _globalKey.currentContext!
           .findRenderObject()! as RenderRepaintBoundary;
+
+      if (boundary.debugNeedsPaint) {
+        print("Waiting for boundary to be painted.");
+        await Future.delayed(const Duration(milliseconds: 20));
+        return _saveScreenshot();
+      }
+
       final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       final ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
@@ -176,7 +183,7 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
       await capturedFile.writeAsBytes(pngBytes);
       print(capturedFile.path);
 
-      await GallerySaver.saveImage(capturedFile.path).then((value) {
+      await GallerySaver.saveImage(capturedFile.path).then((bool? success) {
         setState(() {
           screenshotButtonText = 'screenshot saved!';
         });
