@@ -5,14 +5,14 @@ author: Carnegie Technologies d.o.o <devoffice@carnegietechnologies.com>
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.10.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^1.2.0
-  http: ^0.12.0+2
-  path: ^1.6.2
+  path_provider: ^2.0.1
+  http: ^0.13.1
+  path: ^1.8.0
 
 dev_dependencies:
   flutter_test:
