@@ -267,8 +267,10 @@ internal object FileUtils {
                 val buffer = ByteArray(bufferSize)
                 inputStream.use {
                     outputStream?.use {
-                        while (inputStream.read(buffer) != EOF) {
-                            outputStream.write(buffer)
+                        var len = inputStream.read(buffer)
+                        while (len != EOF) {
+                            outputStream.write(buffer, 0, len)
+                            len = inputStream.read(buffer)
                         }
                     }
                 }
