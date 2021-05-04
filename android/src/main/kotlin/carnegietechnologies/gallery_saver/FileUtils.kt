@@ -101,6 +101,8 @@ internal object FileUtils {
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
             return false
+        } catch (t: Throwable) {
+            return false
         }
 
         return true
@@ -176,10 +178,13 @@ internal object FileUtils {
         )
 
         var outputStream: OutputStream? = null
+        try{
         outputStream.use {
             if (thumbUri != null) {
                 outputStream = contentResolver.openOutputStream(thumbUri)
             }
+        }}catch (e: Exception){
+        //avoid crashing on devices that do not support thumb
         }
     }
 
@@ -271,8 +276,10 @@ internal object FileUtils {
                 val buffer = ByteArray(bufferSize)
                 inputStream.use {
                     outputStream?.use {
-                        while (inputStream.read(buffer) != EOF) {
-                            outputStream.write(buffer)
+                        var len = inputStream.read(buffer)
+                        while (len != EOF) {
+                            outputStream.write(buffer, 0, len)
+                            len = inputStream.read(buffer)
                         }
                     }
                 }

@@ -1,3 +1,11 @@
+## 2.0.3
+
+* Android - Invalid column 
+
+## 2.0.2
+
+* Android 11 support 
+
 ## 2.0.1
 
 * Reverted PR for image validation 
