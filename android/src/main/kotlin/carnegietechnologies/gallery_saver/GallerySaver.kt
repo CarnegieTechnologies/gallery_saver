@@ -41,7 +41,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
         this.mediaType = mediaType
         this.pendingResult = result
 
-        if (isWritePermissionGranted()) {
+        if (isWritePermissionGranted() || android.os.Build.VERSION.SDK_INT >= 29) {
             saveMediaFile()
         } else {
             ActivityCompat.requestPermissions(
@@ -49,7 +49,6 @@ class GallerySaver internal constructor(private val activity: Activity) :
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION
             )
-
         }
     }
 
