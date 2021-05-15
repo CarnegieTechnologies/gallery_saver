@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
+import '../lib/files.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -30,5 +32,15 @@ void main() {
 
   test('save video', () async {
     expect(await GallerySaver.saveVideo('/storage/emulated/video.mov'), false);
+  });
+
+  test('disregard query string for image', () {
+    const String url = "https://placeholder.com/400x400.jpg?remove=true";
+    expect(isImage(url), true);
+  });
+
+  test('disregard query string for video', () {
+    const String url = "https://placeholder.com/400x400.mov?remove=true";
+    expect(isVideo(url), true);
   });
 }
