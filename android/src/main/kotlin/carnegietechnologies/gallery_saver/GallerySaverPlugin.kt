@@ -36,6 +36,7 @@ class GallerySaverPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         this.activity = binding.activity
         gallerySaver = GallerySaver(activity!!)
+        binding.addRequestPermissionsResultListener(gallerySaver!!)
     }
 
 

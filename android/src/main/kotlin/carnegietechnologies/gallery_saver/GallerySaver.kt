@@ -79,24 +79,25 @@ class GallerySaver internal constructor(private val activity: Activity) :
         pendingResult = null
     }
 
+    private fun finishWithFailure() {
+        pendingResult!!.success(false)
+        pendingResult = null
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ): Boolean {
-        val permissionGranted = grantResults.isNotEmpty()
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED
-
         if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
+            val permissionGranted = grantResults.isNotEmpty()
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
             if (permissionGranted) {
-                if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
-                } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
-                }
+                saveMediaFile()
+            } else {
+                finishWithFailure()
             }
-        } else {
-            return false
+            return true
         }
-        return true
+        return false
     }
 
     companion object {
