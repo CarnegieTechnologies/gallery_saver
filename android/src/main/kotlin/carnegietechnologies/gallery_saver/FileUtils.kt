@@ -279,7 +279,7 @@ internal object FileUtils {
             Log.e("GallerySaver", fnfE.message ?: fnfE.toString())
             return false
         } catch (e: Exception) {
-            Log.e("GallerySaver", fnfE.message ?: fnfE.toString())
+            Log.e("GallerySaver", e.message ?: e.toString())
             return false
         }
         return true
