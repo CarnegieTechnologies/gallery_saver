@@ -26,7 +26,7 @@ bool isLocalFilePath(String path) {
 }
 
 bool isVideo(String path) =>
-    videoFormats.contains(extension(path).toLowerCase());
+    videoFormats.contains(fromUri(extension(path)).toLowerCase());
 
 bool isImage(String path) =>
-    imageFormats.contains(extension(path).toLowerCase());
+    imageFormats.contains(fromUri(extension(path)).toLowerCase());
