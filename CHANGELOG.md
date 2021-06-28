@@ -1,3 +1,7 @@
+## 2.1.1
+
+* Migrated to null safety
+
 ## 2.0.3
 
 * Android - Invalid column 
