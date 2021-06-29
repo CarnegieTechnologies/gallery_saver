@@ -1,3 +1,7 @@
+## 2.1.2
+
+* Supported SDK 30 and build fix
+
 ## 2.1.1
 
 * Migrated to null safety
