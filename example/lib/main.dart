@@ -11,7 +11,10 @@ import 'package:path_provider/path_provider.dart';
 
 double textSize = 20;
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -73,7 +76,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _takePhoto() async {
-    ImagePicker().getImage(source: ImageSource.camera)
+    ImagePicker()
+        .getImage(source: ImageSource.camera)
         .then((PickedFile recordedImage) {
       if (recordedImage != null && recordedImage.path != null) {
         setState(() {
@@ -90,7 +94,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _recordVideo() async {
-    ImagePicker().getVideo(source: ImageSource.camera)
+    ImagePicker()
+        .getVideo(source: ImageSource.camera)
         .then((PickedFile recordedVideo) {
       if (recordedVideo != null && recordedVideo.path != null) {
         setState(() {
@@ -180,11 +185,10 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
       await capturedFile.writeAsBytes(pngBytes);
       print(capturedFile.path);
 
-      await GallerySaver.saveImage(capturedFile.path)
-          .then((value) {
-            setState(() {
-              screenshotButtonText = 'screenshot saved!';
-            });
+      await GallerySaver.saveImage(capturedFile.path).then((value) {
+        setState(() {
+          screenshotButtonText = 'screenshot saved!';
+        });
       });
     } catch (e) {
       print(e);
