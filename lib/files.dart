@@ -24,6 +24,7 @@ bool isLocalFilePath(String path) {
 }
 
 bool isVideo(String path) {
+  if (path.isEmpty) return false;
   List<String> parsedSegment = Uri.parse(path).pathSegments.last.split(".");
   return parsedSegment.length == 1
       ? false
@@ -31,6 +32,7 @@ bool isVideo(String path) {
 }
 
 bool isImage(String path) {
+  if (path.isEmpty) return false;
   List<String> parsedSegment = Uri.parse(path).pathSegments.last.split(".");
   return parsedSegment.length == 1
       ? false
