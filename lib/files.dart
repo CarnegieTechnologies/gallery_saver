@@ -6,6 +6,7 @@ const List<String> videoFormats = [
   '.avi',
   '.wmv',
   '.3gp',
+  '.3gpp',
   '.mkv',
   '.flv'
 ];
