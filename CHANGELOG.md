@@ -1,4 +1,8 @@
-## 2.1.2
+## 2.1.3
+
+* Example project build fix and .3gpp video type supprted
+
+# 2.1.2
 
 * Supported SDK 30 and build fix
 
