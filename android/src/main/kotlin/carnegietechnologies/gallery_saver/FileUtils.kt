@@ -257,18 +257,20 @@ internal object FileUtils {
         val videoFilePath = File(albumDir, inputFile.name).absolutePath
 
         val values = ContentValues()
+        if (android.os.Build.VERSION.SDK_INT < 29) {
+            values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
+        }
 
         values.put(MediaStore.Video.Media.TITLE, inputFile.name)
         values.put(MediaStore.Video.Media.DISPLAY_NAME, inputFile.name)
         values.put(MediaStore.Video.Media.MIME_TYPE, mimeType)
         // Add the date meta data to ensure the image is added at the front of the gallery
         values.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis())
-        values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
+        values.put(MediaStore.Video.Media.DATE_MODIFIED, System.currentTimeMillis())
 
-        if (android.os.Build.VERSION.SDK_INT < 29) {
-            values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
-            values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + folderName)
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
+            values.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + File.separator + folderName)
         }
 
 
