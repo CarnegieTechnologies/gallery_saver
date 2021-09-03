@@ -85,13 +85,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED
 
         if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
-            if (permissionGranted) {
-                if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
-                } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
-                }
-            }
+            if (permissionGranted) saveMediaFile()
         } else {
             return false
         }
