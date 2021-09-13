@@ -322,6 +322,9 @@ internal object FileUtils {
         toDcim: Boolean
     ): String {
         var albumFolderPath: String = Environment.getExternalStorageDirectory().path
+        if (toDcim && android.os.Build.VERSION.SDK_INT < 29) {
+            albumFolderPath += File.separator + Environment.DIRECTORY_DCIM;
+        }
         albumFolderPath = if (TextUtils.isEmpty(folderName)) {
             var baseFolderName = if (mediaType == MediaType.image)
                 Environment.DIRECTORY_PICTURES else
