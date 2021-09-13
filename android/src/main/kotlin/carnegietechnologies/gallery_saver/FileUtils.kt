@@ -62,10 +62,6 @@ internal object FileUtils {
         val imageFilePath = File(albumDir, file.name).absolutePath
 
         val values = ContentValues()
-        if (android.os.Build.VERSION.SDK_INT < 29) {
-            values.put(MediaStore.Images.ImageColumns.DATA, imageFilePath)
-        }
-
         values.put(MediaStore.Images.Media.TITLE, file.name)
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
@@ -73,7 +69,10 @@ internal object FileUtils {
         values.put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
         values.put(MediaStore.Images.Media.SIZE, file.length())
 
-        if (android.os.Build.VERSION.SDK_INT >= 29) {
+        if (android.os.Build.VERSION.SDK_INT < 29) {
+            values.put(MediaStore.Images.ImageColumns.DATA, imageFilePath)
+        }
+        else {
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
             values.put(MediaStore.Images.Media.RELATIVE_PATH, directory + File.separator + folderName)
         }
@@ -286,6 +285,7 @@ internal object FileUtils {
             val duration = durString!!.toInt()
             
             values.put(MediaStore.Video.Media.DURATION, duration)
+            values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
         } else {
             values.put(MediaStore.Video.Media.RELATIVE_PATH, directory + File.separator + folderName)
         }
@@ -322,6 +322,9 @@ internal object FileUtils {
         toDcim: Boolean
     ): String {
         var albumFolderPath: String = Environment.getExternalStorageDirectory().path
+        if (toDcim && android.os.Build.VERSION.SDK_INT < 29) {
+            albumFolderPath += File.separator + Environment.DIRECTORY_DCIM;
+        }
         albumFolderPath = if (TextUtils.isEmpty(folderName)) {
             var baseFolderName = if (mediaType == MediaType.image)
                 Environment.DIRECTORY_PICTURES else
