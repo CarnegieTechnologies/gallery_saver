@@ -34,24 +34,31 @@ internal object FileUtils {
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
      * @param folderName      - folder name for storing image
+     * @param toDcim          - whether the file should be saved to DCIM
      * @return true if image was saved successfully
      */
     fun insertImage(
         contentResolver: ContentResolver,
         path: String,
-        folderName: String?
+        folderName: String?,
+        toDcim: Boolean
     ): Boolean {
         val file = File(path)
         val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         var source = getBytesFromFile(file)
 
+        var directory = Environment.DIRECTORY_PICTURES
+        if (toDcim) {
+            directory = Environment.DIRECTORY_DCIM
+        }
+
         val rotatedBytes = getRotatedBytesIfNecessary(source, path)
 
         if (rotatedBytes != null) {
             source = rotatedBytes
         }
-        val albumDir = File(getAlbumFolderPath(folderName, MediaType.image))
+        val albumDir = File(getAlbumFolderPath(folderName, MediaType.image, toDcim))
         val imageFilePath = File(albumDir, file.name).absolutePath
 
         val values = ContentValues()
@@ -68,7 +75,7 @@ internal object FileUtils {
 
         if (android.os.Build.VERSION.SDK_INT >= 29) {
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + folderName)
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, directory + File.separator + folderName)
         }
 
         var imageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -239,12 +246,14 @@ internal object FileUtils {
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
      * @param folderName      - folder name for storing video
+     * @param toDcim          - whether the file should be saved to DCIM
      * @return true if video was saved successfully
      */
     fun insertVideo(
         contentResolver: ContentResolver,
         inputPath: String,
         folderName: String?,
+        toDcim: Boolean,
         bufferSize: Int = BUFFER_SIZE
     ): Boolean {
         val inputFile = File(inputPath)
@@ -254,7 +263,12 @@ internal object FileUtils {
         val extension = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
 
-        val albumDir = File(getAlbumFolderPath(folderName, MediaType.video))
+        var directory = Environment.DIRECTORY_MOVIES
+        if (toDcim) {
+            directory = Environment.DIRECTORY_DCIM
+        }
+
+        val albumDir = File(getAlbumFolderPath(folderName, MediaType.video, toDcim))
         val videoFilePath = File(albumDir, inputFile.name).absolutePath
 
         val values = ContentValues()
@@ -273,7 +287,7 @@ internal object FileUtils {
             
             values.put(MediaStore.Video.Media.DURATION, duration)
         } else {
-            values.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + File.separator + folderName)
+            values.put(MediaStore.Video.Media.RELATIVE_PATH, directory + File.separator + folderName)
         }
 
         try {
@@ -302,12 +316,19 @@ internal object FileUtils {
         return true
     }
 
-    private fun getAlbumFolderPath(folderName: String?, mediaType: MediaType): String {
+    private fun getAlbumFolderPath(
+        folderName: String?, 
+        mediaType: MediaType,
+        toDcim: Boolean
+    ): String {
         var albumFolderPath: String = Environment.getExternalStorageDirectory().path
         albumFolderPath = if (TextUtils.isEmpty(folderName)) {
-            val baseFolderName = if (mediaType == MediaType.image)
+            var baseFolderName = if (mediaType == MediaType.image)
                 Environment.DIRECTORY_PICTURES else
                 Environment.DIRECTORY_MOVIES
+            if (toDcim) {
+                baseFolderName = Environment.DIRECTORY_DCIM;
+            }
             createDirIfNotExist(
                 Environment.getExternalStoragePublicDirectory(baseFolderName).path
             ) ?: albumFolderPath
