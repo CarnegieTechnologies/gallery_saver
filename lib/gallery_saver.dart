@@ -18,8 +18,12 @@ class GallerySaver {
   static const MethodChannel _channel = const MethodChannel(channelName);
 
   ///saves video from provided temp path and optional album name in gallery
-  static Future<bool?> saveVideo(String path,
-      {String? albumName, bool toDcim = false}) async {
+  static Future<bool?> saveVideo(
+    String path, {
+    String? albumName,
+    bool toDcim = false,
+    Map<String, String>? headers,
+  }) async {
     File? tempFile;
     if (path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
@@ -42,8 +46,12 @@ class GallerySaver {
   }
 
   ///saves image from provided temp path and optional album name in gallery
-  static Future<bool?> saveImage(String path,
-      {String? albumName, bool toDcim = false}) async {
+  static Future<bool?> saveImage(
+    String path, {
+    String? albumName,
+    bool toDcim = false,
+    Map<String, String>? headers,
+  }) async {
     File? tempFile;
     if (path.isEmpty) {
       throw ArgumentError(pleaseProvidePath);
@@ -67,10 +75,10 @@ class GallerySaver {
     return result;
   }
 
-  static Future<File> _downloadFile(String url) async {
+  static Future<File> _downloadFile(String url, {Map<String, String>? headers}) async {
     print(url);
     http.Client _client = new http.Client();
-    var req = await _client.get(Uri.parse(url));
+    var req = await _client.get(Uri.parse(url), headers: headers);
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
     File file = new File('$dir/${basename(url)}');

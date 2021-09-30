@@ -279,13 +279,14 @@ internal object FileUtils {
         values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis())
 
         if (android.os.Build.VERSION.SDK_INT < 29) {
-            val r = MediaMetadataRetriever()
-            r.setDataSource(inputPath)
-            val durString = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            val duration = durString!!.toInt()
-            
-            values.put(MediaStore.Video.Media.DURATION, duration)
-            values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
+            try {
+                val r = MediaMetadataRetriever()
+                r.setDataSource(inputPath)
+                val durString = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                val duration = durString!!.toInt()
+                values.put(MediaStore.Video.Media.DURATION, duration)
+                values.put(MediaStore.Video.VideoColumns.DATA, videoFilePath)
+            } catch(e: Exception) {}
         } else {
             values.put(MediaStore.Video.Media.RELATIVE_PATH, directory + File.separator + folderName)
         }

@@ -1,3 +1,7 @@
+## 2.2.0
+
+* Merged 3 community fixes 
+
 ## 2.1.3
 
 * Example project build fix and .3gpp video type supprted
