@@ -5,21 +5,10 @@ Both images and videos will be visible in Android Gallery and iOS Photos.
 
 NOTE: If you want to save network image or video link, it has to contain 'http/https' prefix.
 
-This is a fork of [CarnegieTechnologies/gallery_saver](https://github.com/CarnegieTechnologies/gallery_saver).
-
-This fork allows saving pictures and videos into a subfolder of DCIM.
-
 
 ## Installation
 
-First, add this repository as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
-
-``` 
-gallery_saver:
-  git:
-    url: https://github.com/m-schmailzl/gallery_saver.git
-    ref: master
-```
+First, add `gallery_saver` as a [dependency in your pubspec.yaml file](https://flutter.io/platform-plugins/).
 
 ### iOS
 
