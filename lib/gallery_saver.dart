@@ -32,7 +32,7 @@ class GallerySaver {
       throw ArgumentError(fileIsNotVideo);
     }
     if (!isLocalFilePath(path)) {
-      tempFile = await _downloadFile(path);
+      tempFile = await _downloadFile(path, headers: headers);
       path = tempFile.path;
     }
     bool? result = await _channel.invokeMethod(
@@ -60,7 +60,7 @@ class GallerySaver {
       throw ArgumentError(fileIsNotImage);
     }
     if (!isLocalFilePath(path)) {
-      tempFile = await _downloadFile(path);
+      tempFile = await _downloadFile(path, headers: headers);
       path = tempFile.path;
     }
 
@@ -75,10 +75,15 @@ class GallerySaver {
     return result;
   }
 
-  static Future<File> _downloadFile(String url, {Map<String, String>? headers}) async {
+  static Future<File> _downloadFile(String url,
+      {Map<String, String>? headers}) async {
     print(url);
+    print(headers);
     http.Client _client = new http.Client();
     var req = await _client.get(Uri.parse(url), headers: headers);
+    if (req.statusCode >= 400) {
+      throw HttpException(req.statusCode.toString());
+    }
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
     File file = new File('$dir/${basename(url)}');
