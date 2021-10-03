@@ -1,3 +1,6 @@
+## 2.3.1
+*Fixed header for download file method
+
 ## 2.3.0
 
 *  fixed save video on Android SDK < 29 and ability to save media to DCIM
