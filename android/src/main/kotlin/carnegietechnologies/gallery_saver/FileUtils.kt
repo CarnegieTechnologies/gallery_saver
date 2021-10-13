@@ -39,35 +39,36 @@ internal object FileUtils {
      */
     fun insertImage(
         contentResolver: ContentResolver,
-        path: String,
+        bytes: ByteArray,
+        fileName: String,
         folderName: String?,
-        toDcim: Boolean
+        toDcim: Boolean,
+        bufferSize: Int = BUFFER_SIZE
     ): Boolean {
-        val file = File(path)
-        val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
+        val extension = MimeTypeMap.getFileExtensionFromUrl(fileName)
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        var source = getBytesFromFile(file)
+        var source = bytes
 
         var directory = Environment.DIRECTORY_PICTURES
         if (toDcim) {
             directory = Environment.DIRECTORY_DCIM
         }
 
-        val rotatedBytes = getRotatedBytesIfNecessary(source, path)
+        val rotatedBytes = getRotatedBytesIfNecessary(source)
 
         if (rotatedBytes != null) {
             source = rotatedBytes
         }
         val albumDir = File(getAlbumFolderPath(folderName, MediaType.image, toDcim))
-        val imageFilePath = File(albumDir, file.name).absolutePath
+        val imageFilePath = File(albumDir, fileName).absolutePath
 
         val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, file.name)
+        values.put(MediaStore.Images.Media.TITLE, fileName)
         values.put(MediaStore.Images.Media.MIME_TYPE, mimeType)
         values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
         values.put(MediaStore.Images.Media.DATE_MODIFIED, System.currentTimeMillis() / 1000)
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
-        values.put(MediaStore.Images.Media.SIZE, file.length())
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+        values.put(MediaStore.Images.Media.SIZE, source.size)
 
         if (android.os.Build.VERSION.SDK_INT < 29) {
             values.put(MediaStore.Images.ImageColumns.DATA, imageFilePath)
@@ -82,27 +83,20 @@ internal object FileUtils {
         try {
             imageUri = contentResolver.insert(imageUri, values)
 
-            if (source != null) {
-                var outputStream: OutputStream? = null
-                if (imageUri != null) {
-                    outputStream = contentResolver.openOutputStream(imageUri)
-                }
+            var outputStream: OutputStream? = null
+            if (imageUri != null) {
+                outputStream = contentResolver.openOutputStream(imageUri)
+            }
 
-                outputStream?.use {
-                    outputStream.write(source)
-                }
+            outputStream?.use {
+                outputStream.write(source)
+            }
 
-                if (imageUri != null && android.os.Build.VERSION.SDK_INT < 29) {
-                    val pathId = ContentUris.parseId(imageUri)
-                    val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
-                            contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null)
-                    storeThumbnail(contentResolver, miniThumb, pathId)
-                }
-            } else {
-                if (imageUri != null) {
-                    contentResolver.delete(imageUri, null, null)
-                }
-                imageUri = null
+            if (imageUri != null && android.os.Build.VERSION.SDK_INT < 29) {
+                val pathId = ContentUris.parseId(imageUri)
+                val miniThumb = MediaStore.Images.Thumbnails.getThumbnail(
+                        contentResolver, pathId, MediaStore.Images.Thumbnails.MINI_KIND, null)
+                storeThumbnail(contentResolver, miniThumb, pathId)
             }
         } catch (e: IOException) {
             contentResolver.delete(imageUri!!, null, null)
@@ -119,11 +113,11 @@ internal object FileUtils {
      * @param path   - path to image that needs to be checked for rotation
      * @return - array of bytes from rotated image, if rotation needs to be performed
      */
-    private fun getRotatedBytesIfNecessary(source: ByteArray?, path: String): ByteArray? {
+    private fun getRotatedBytesIfNecessary(source: ByteArray): ByteArray? {
         var rotationInDegrees = 0
 
         try {
-            rotationInDegrees = exifToDegrees(getRotation(path))
+            rotationInDegrees = exifToDegrees(getRotation(source))
         } catch (e: IOException) {
             Log.d(TAG, e.toString())
         }
@@ -132,7 +126,7 @@ internal object FileUtils {
             return null
         }
 
-        val bitmap = BitmapFactory.decodeByteArray(source, 0, source!!.size)
+        val bitmap = BitmapFactory.decodeByteArray(source, 0, source.size)
         val matrix = Matrix()
         matrix.preRotate(rotationInDegrees.toFloat())
         val adjustedBitmap = Bitmap.createBitmap(
@@ -214,8 +208,8 @@ internal object FileUtils {
      * provided path
      */
     @Throws(IOException::class)
-    private fun getRotation(path: String): Int {
-        val exif = ExifInterface(path)
+    private fun getRotation(bytes: ByteArray): Int {
+        val exif = ExifInterface(ByteArrayInputStream(bytes))
         return exif.getAttributeInt(
             ExifInterface.TAG_ORIENTATION,
             ExifInterface.ORIENTATION_NORMAL
@@ -230,17 +224,6 @@ internal object FileUtils {
         return byteArray
     }
 
-    private fun getBytesFromFile(file: File): ByteArray? {
-        val size = file.length().toInt()
-        val bytes = ByteArray(size)
-        val buf = BufferedInputStream(FileInputStream(file))
-        buf.use {
-            buf.read(bytes, 0, bytes.size)
-        }
-
-        return bytes
-    }
-
     /**
      * @param contentResolver - content resolver
      * @param path            - path to temp file that needs to be stored
@@ -250,16 +233,16 @@ internal object FileUtils {
      */
     fun insertVideo(
         contentResolver: ContentResolver,
-        inputPath: String,
+        bytes: ByteArray,
+        fileName: String,
         folderName: String?,
         toDcim: Boolean,
         bufferSize: Int = BUFFER_SIZE
     ): Boolean {
-        val inputFile = File(inputPath)
         val inputStream: InputStream?
         val outputStream: OutputStream?
 
-        val extension = MimeTypeMap.getFileExtensionFromUrl(inputFile.toString())
+        val extension = MimeTypeMap.getFileExtensionFromUrl(fileName)
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
 
         var directory = Environment.DIRECTORY_MOVIES
@@ -268,11 +251,11 @@ internal object FileUtils {
         }
 
         val albumDir = File(getAlbumFolderPath(folderName, MediaType.video, toDcim))
-        val videoFilePath = File(albumDir, inputFile.name).absolutePath
+        val videoFilePath = File(albumDir, fileName).absolutePath
 
         val values = ContentValues()
-        values.put(MediaStore.Video.Media.TITLE, inputFile.name)
-        values.put(MediaStore.Video.Media.DISPLAY_NAME, inputFile.name)
+        values.put(MediaStore.Video.Media.TITLE, fileName)
+        values.put(MediaStore.Video.Media.DISPLAY_NAME, fileName)
         values.put(MediaStore.Video.Media.MIME_TYPE, mimeType)
         values.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis())
         values.put(MediaStore.Video.Media.DATE_MODIFIED, System.currentTimeMillis())
@@ -280,8 +263,9 @@ internal object FileUtils {
 
         if (android.os.Build.VERSION.SDK_INT < 29) {
             try {
+                val inputFile = File.createTempFile(fileName, extension).apply { writeBytes(bytes) }
                 val r = MediaMetadataRetriever()
-                r.setDataSource(inputPath)
+                r.setDataSource(inputFile.path)
                 val durString = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 val duration = durString!!.toInt()
                 values.put(MediaStore.Video.Media.DURATION, duration)
@@ -293,7 +277,7 @@ internal object FileUtils {
 
         try {
             val url = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-            inputStream = FileInputStream(inputFile)
+            inputStream = ByteArrayInputStream(bytes)
             if (url != null) {
                 outputStream = contentResolver.openOutputStream(url)
                 val buffer = ByteArray(bufferSize)

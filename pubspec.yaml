@@ -13,7 +13,6 @@ module:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^2.0.2
   http: ^0.13.3
   path: ^1.8.0
 
