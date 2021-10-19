@@ -1,3 +1,6 @@
+## 2.3.2
+*Fixed - fix url error with query #146
+
 ## 2.3.1
 *Fixed header for download file method
 
