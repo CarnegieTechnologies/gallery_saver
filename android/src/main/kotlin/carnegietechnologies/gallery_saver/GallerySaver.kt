@@ -18,7 +18,8 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
     private var pendingResult: MethodChannel.Result? = null
     private var mediaType: MediaType? = null
-    private var filePath: String = ""
+    private var bytes: ByteArray = byteArrayOf()
+    private var fileName: String = ""
     private var albumName: String = ""
     private var toDcim: Boolean = false
 
@@ -37,7 +38,8 @@ class GallerySaver internal constructor(private val activity: Activity) :
         result: MethodChannel.Result,
         mediaType: MediaType
     ) {
-        filePath = methodCall.argument<Any>(KEY_PATH)?.toString() ?: ""
+        bytes = methodCall.argument<Any>(KEY_BYTES) as ByteArray
+        fileName = methodCall.argument<Any>(KEY_FILE_NAME)?.toString() ?: ""
         albumName = methodCall.argument<Any>(KEY_ALBUM_NAME)?.toString() ?: ""
         toDcim = methodCall.argument<Any>(KEY_TO_DCIM) as Boolean
         this.mediaType = mediaType
@@ -65,9 +67,9 @@ class GallerySaver internal constructor(private val activity: Activity) :
         uiScope.launch {
             val success = async(Dispatchers.IO) {
                 if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName, toDcim)
+                    FileUtils.insertVideo(activity.contentResolver, bytes, fileName, albumName, toDcim)
                 } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName, toDcim)
+                    FileUtils.insertImage(activity.contentResolver, bytes, fileName, albumName, toDcim)
                 }
             }
             success.await()
@@ -105,7 +107,8 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
         private const val REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION = 2408
 
-        private const val KEY_PATH = "path"
+        private const val KEY_BYTES = "bytes"
+        private const val KEY_FILE_NAME = "fileName"
         private const val KEY_ALBUM_NAME = "albumName"
         private const val KEY_TO_DCIM = "toDcim"
     }
