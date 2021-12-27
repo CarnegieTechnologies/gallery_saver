@@ -19,8 +19,8 @@ class GallerySaver {
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
   /// set the debug value, print information only when in debug mode.
-  static setDebug(bool isDebug) {
-    _debug = isDebug;
+  static setDebug({required bool debug}) {
+    _debug = debug;
   }
 
   ///saves video from provided temp path and optional album name in gallery
