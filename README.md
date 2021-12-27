@@ -31,7 +31,7 @@ import 'package:image_picker/image_picker.dart';
 
 void main() {
   // Optional, default value is false.
-  // Prints general info about downloaded file if `isDebug` is true.
+  // Prints general info about downloaded file if `debug` is true.
   GallerySaver.setDebug(debug: true);
   runApp(MyApp());
 }
