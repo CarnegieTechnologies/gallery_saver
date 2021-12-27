@@ -29,7 +29,12 @@ import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // Optional, default value is false.
+  // Prints general info about downloaded file if `isDebug` is true.
+  GallerySaver.setDebug(debug: true);
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -114,8 +119,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
   void _saveNetworkVideo() async {
-    String path =
-        'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
+    String path = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
     GallerySaver.saveVideo(path).then((bool success) {
       setState(() {
         print('Video is saved');
@@ -124,8 +128,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _saveNetworkImage() async {
-    String path =
-        'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
+    String path = 'https://image.shutterstock.com/image-photo/montreal-canada-july-11-2019-600w-1450023539.jpg';
     GallerySaver.saveImage(path).then((bool success) {
       setState(() {
         print('Image is saved');
