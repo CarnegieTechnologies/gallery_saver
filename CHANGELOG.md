@@ -1,4 +1,22 @@
-## 2.1.2
+## 2.3.2
+*Fixed - fix url error with query #146
+
+## 2.3.1
+*Fixed header for download file method
+
+## 2.3.0
+
+*  fixed save video on Android SDK < 29 and ability to save media to DCIM
+
+## 2.2.0
+
+* Merged 3 community fixes 
+
+## 2.1.3
+
+* Example project build fix and .3gpp video type supprted
+
+# 2.1.2
 
 * Supported SDK 30 and build fix
 

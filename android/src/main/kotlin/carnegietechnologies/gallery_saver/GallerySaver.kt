@@ -20,6 +20,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
     private var mediaType: MediaType? = null
     private var filePath: String = ""
     private var albumName: String = ""
+    private var toDcim: Boolean = false
 
     private val job = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main + job)
@@ -38,6 +39,7 @@ class GallerySaver internal constructor(private val activity: Activity) :
     ) {
         filePath = methodCall.argument<Any>(KEY_PATH)?.toString() ?: ""
         albumName = methodCall.argument<Any>(KEY_ALBUM_NAME)?.toString() ?: ""
+        toDcim = methodCall.argument<Any>(KEY_TO_DCIM) as Boolean
         this.mediaType = mediaType
         this.pendingResult = result
 
@@ -63,9 +65,9 @@ class GallerySaver internal constructor(private val activity: Activity) :
         uiScope.launch {
             val success = async(Dispatchers.IO) {
                 if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
+                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName, toDcim)
                 } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
+                    FileUtils.insertImage(activity.contentResolver, filePath, albumName, toDcim)
                 }
             }
             success.await()
@@ -78,24 +80,25 @@ class GallerySaver internal constructor(private val activity: Activity) :
         pendingResult = null
     }
 
+    private fun finishWithFailure() {
+        pendingResult!!.success(false)
+        pendingResult = null
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ): Boolean {
-        val permissionGranted = grantResults.isNotEmpty()
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED
-
         if (requestCode == REQUEST_EXTERNAL_IMAGE_STORAGE_PERMISSION) {
+            val permissionGranted = grantResults.isNotEmpty()
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
             if (permissionGranted) {
-                if (mediaType == MediaType.video) {
-                    FileUtils.insertVideo(activity.contentResolver, filePath, albumName)
-                } else {
-                    FileUtils.insertImage(activity.contentResolver, filePath, albumName)
-                }
+                saveMediaFile()
+            } else {
+                finishWithFailure()
             }
-        } else {
-            return false
+            return true
         }
-        return true
+        return false
     }
 
     companion object {
@@ -104,5 +107,6 @@ class GallerySaver internal constructor(private val activity: Activity) :
 
         private const val KEY_PATH = "path"
         private const val KEY_ALBUM_NAME = "albumName"
+        private const val KEY_TO_DCIM = "toDcim"
     }
 }

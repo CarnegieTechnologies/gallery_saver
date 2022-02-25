@@ -5,7 +5,7 @@ const List<String> videoFormats = [
   'wmv',
   '3gp',
   'mkv',
-  'flv'
+  'flv',
 ];
 const List<String> imageFormats = [
   'jpeg',

@@ -1,7 +1,5 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_plugin_android_lifecycle (0.0.1):
-    - Flutter
   - gallery_saver (0.0.1):
     - Flutter
   - image_picker (0.0.1):
@@ -11,7 +9,6 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - flutter_plugin_android_lifecycle (from `.symlinks/plugins/flutter_plugin_android_lifecycle/ios`)
   - gallery_saver (from `.symlinks/plugins/gallery_saver/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
@@ -19,8 +16,6 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  flutter_plugin_android_lifecycle:
-    :path: ".symlinks/plugins/flutter_plugin_android_lifecycle/ios"
   gallery_saver:
     :path: ".symlinks/plugins/gallery_saver/ios"
   image_picker:
@@ -29,12 +24,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_plugin_android_lifecycle: 47de533a02850f070f5696a623995e93eddcdb9b
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   gallery_saver: 9fc173c9f4fcc48af53b2a9ebea1b643255be542
-  image_picker: e3eacd46b94694dde7cf2705955cece853aa1a8f
-  path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
+  image_picker: 9aa50e1d8cdacdbed739e925b7eea16d014367e6
+  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
 
-PODFILE CHECKSUM: 083258d7f5e80b42ea9bfee905fe93049bc04c64
+PODFILE CHECKSUM: fc81e398f362bae88bdf55239bd5cf842faad39f
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1
