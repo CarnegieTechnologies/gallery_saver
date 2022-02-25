@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import "dart:developer";
 
 import 'package:flutter/services.dart';
 import 'package:gallery_saver/files.dart';
@@ -75,6 +76,7 @@ class GallerySaver {
     return result;
   }
 
+
   static Future<File> _downloadFile(String url,
       {Map<String, String>? headers}) async {
     print(url);
@@ -86,10 +88,9 @@ class GallerySaver {
     }
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
-    File file = new File('$dir/${basename(url)}');
+    File file = new File('$dir/${uri.pathSegments.last}');
     await file.writeAsBytes(bytes);
-    print('File size:${await file.length()}');
-    print(file.path);
+    log('Downloaded file size:${await file.length()}', name: "GALLERY SAVER");
     return file;
   }
 }

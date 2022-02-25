@@ -4,25 +4,23 @@ version: 2.3.2
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.10.0"
 
 module:
- androidX: true
+  androidX: true
 
 dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.0.2
   http: ^0.13.3
-  path: ^1.8.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
 flutter:
-
   plugin:
     platforms:
       android:
@@ -30,5 +28,3 @@ flutter:
         pluginClass: GallerySaverPlugin
       ios:
         pluginClass: GallerySaverPlugin
-
-
