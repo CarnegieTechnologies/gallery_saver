@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -45,9 +45,13 @@ class _MyAppState extends State<MyApp> {
                         backgroundColor: MaterialStateProperty.all(Colors.blue),
                       ),
                       onPressed: _takePhoto,
-                      child: Text(firstButtonText,
-                          style: TextStyle(
-                              fontSize: textSize, color: Colors.white)),
+                      child: Text(
+                        firstButtonText,
+                        style: TextStyle(
+                          fontSize: textSize,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -61,9 +65,13 @@ class _MyAppState extends State<MyApp> {
                       backgroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     onPressed: _recordVideo,
-                    child: Text(secondButtonText,
-                        style: TextStyle(
-                            fontSize: textSize, color: Colors.blueGrey)),
+                    child: Text(
+                      secondButtonText,
+                      style: TextStyle(
+                        fontSize: textSize,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
                   ),
                 )),
                 flex: 1,
@@ -76,39 +84,36 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _takePhoto() async {
-    ImagePicker()
-        .getImage(source: ImageSource.camera)
-        .then((PickedFile recordedImage) {
-      if (recordedImage != null && recordedImage.path != null) {
+    final recordedImage =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+    if (recordedImage != null && recordedImage.path != null) {
+      setState(() {
+        firstButtonText = 'saving in progress...';
+      });
+      GallerySaver.saveImage(recordedImage.path, albumName: albumName)
+          .then((bool success) {
         setState(() {
-          firstButtonText = 'saving in progress...';
+          firstButtonText = 'image saved!';
         });
-        GallerySaver.saveImage(recordedImage.path, albumName: albumName)
-            .then((bool success) {
-          setState(() {
-            firstButtonText = 'image saved!';
-          });
-        });
-      }
-    });
+      });
+    }
   }
 
   void _recordVideo() async {
-    ImagePicker()
-        .getVideo(source: ImageSource.camera)
-        .then((PickedFile recordedVideo) {
-      if (recordedVideo != null && recordedVideo.path != null) {
+    final recordedVideo =
+        await ImagePicker().pickVideo(source: ImageSource.camera);
+
+    if (recordedVideo != null && recordedVideo.path != null) {
+      setState(() {
+        secondButtonText = 'saving in progress...';
+      });
+      GallerySaver.saveVideo(recordedVideo.path, albumName: albumName)
+          .then((bool success) {
         setState(() {
-          secondButtonText = 'saving in progress...';
+          secondButtonText = 'video saved!';
         });
-        GallerySaver.saveVideo(recordedVideo.path, albumName: albumName)
-            .then((bool success) {
-          setState(() {
-            secondButtonText = 'video saved!';
-          });
-        });
-      }
-    });
+      });
+    }
   }
 
   // ignore: unused_element
@@ -173,6 +178,13 @@ class _ScreenshotWidgetState extends State<ScreenshotWidget> {
       //extract bytes
       final RenderRepaintBoundary boundary =
           _globalKey.currentContext.findRenderObject();
+
+      // if it needs repaint, we paint it.
+      if (boundary.debugNeedsPaint) {
+        Timer(Duration(seconds: 1), () => _saveScreenshot());
+        return null;
+      }
+
       final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       final ByteData byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
