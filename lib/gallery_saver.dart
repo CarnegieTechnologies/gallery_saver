@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -24,17 +25,15 @@ class GallerySaver {
     bool toDcim = false,
     Map<String, String>? headers,
   }) async {
+    assert(path.isNotEmpty, pleaseProvidePath);
+    assert(isVideo(path), fileIsNotVideo);
+
     File? tempFile;
-    if (path.isEmpty) {
-      throw ArgumentError(pleaseProvidePath);
-    }
-    if (!isVideo(path)) {
-      throw ArgumentError(fileIsNotVideo);
-    }
     if (!isLocalFilePath(path)) {
       tempFile = await _downloadFile(path, headers: headers);
       path = tempFile.path;
     }
+
     bool? result = await _channel.invokeMethod(
       methodSaveVideo,
       <String, dynamic>{'path': path, 'albumName': albumName, 'toDcim': toDcim},
@@ -52,13 +51,10 @@ class GallerySaver {
     bool toDcim = false,
     Map<String, String>? headers,
   }) async {
+    assert(path.isNotEmpty, pleaseProvidePath);
+    assert(isImage(path), fileIsNotImage);
+
     File? tempFile;
-    if (path.isEmpty) {
-      throw ArgumentError(pleaseProvidePath);
-    }
-    if (!isImage(path)) {
-      throw ArgumentError(fileIsNotImage);
-    }
     if (!isLocalFilePath(path)) {
       tempFile = await _downloadFile(path, headers: headers);
       path = tempFile.path;
@@ -75,10 +71,10 @@ class GallerySaver {
     return result;
   }
 
-  static Future<File> _downloadFile(String url,
-      {Map<String, String>? headers}) async {
-    print(url);
-    print(headers);
+  static Future<File> _downloadFile(
+    String url, {
+    Map<String, String>? headers,
+  }) async {
     http.Client _client = new http.Client();
     var req = await _client.get(Uri.parse(url), headers: headers);
     if (req.statusCode >= 400) {
@@ -86,10 +82,25 @@ class GallerySaver {
     }
     var bytes = req.bodyBytes;
     String dir = (await getTemporaryDirectory()).path;
-    File file = new File('$dir/${basename(url)}');
+    String fileName = _shortenFileName(url);
+
+    File file = new File('$dir/$fileName');
+
     await file.writeAsBytes(bytes);
-    print('File size:${await file.length()}');
-    print(file.path);
+    log('Saving $fileName, ${await file.length() ~/ 1024} Kb',
+        name: 'GallerySaver');
+
     return file;
+  }
+
+  static String _shortenFileName(String url) {
+    String fileName = basename(url);
+    final len = fileName.length;
+
+    if (len > 255) {
+      fileName = fileName.substring(len - 255, len);
+    }
+
+    return fileName;
   }
 }
