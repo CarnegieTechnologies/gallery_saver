@@ -18,7 +18,11 @@ Add the following keys to your _Info.plist_ file, located in `<project root>/ios
 
 ### Android
 
-* `android.permission.WRITE_EXTERNAL_STORAGE` - Permission for usage of external storage
+* Permission for usage of external storage
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+android:maxSdkVersion="28" />
+```
 
 ### Example
 
