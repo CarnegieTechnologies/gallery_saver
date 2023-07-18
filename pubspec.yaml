@@ -4,7 +4,7 @@ version: 2.3.2
 homepage: https://github.com/CarnegieTechnologies/gallery_saver
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
   flutter: ">=1.10.0"
 
 module:
@@ -13,9 +13,9 @@ module:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^2.0.2
-  http: ^0.13.3
-  path: ^1.8.0
+  path_provider: ^2.0.11
+  http: '>=0.13.0 <2.0.0'
+  path: ^1.8.2
 
 dev_dependencies:
   flutter_test:
